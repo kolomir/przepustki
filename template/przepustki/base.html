@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+    {% include "przepustki/head.html" %}
+    <body class="d-flex flex-column h-100 d-inline-block">
+        {% include "przepustki/header.html" %}
+        {% include "przepustki/messages.html" %}
+
+        {% block content %}
+        {% endblock content %}
+
+        {% include "przepustki/footer.html" %}
+        {% include "przepustki/scripts.html" %}
+    </body>
+</html>

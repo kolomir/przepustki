@@ -1,0 +1,78 @@
+{% load static %}
+    <!-- jQuery -->
+    <script type="text/javascript" src="{% static 'MDB-Pro_4.19.2/js/jquery.min.js' %}"></script>
+    <!-- Bootstrap tooltips -->
+    <script type="text/javascript" src="{% static 'MDB-Pro_4.19.2/js/popper.min.js' %}"></script>
+    <!-- Bootstrap core JavaScript -->
+    <script type="text/javascript" src="{% static 'MDB-Pro_4.19.2/js/bootstrap.min.js' %}"></script>
+    <!-- MDB core JavaScript -->
+    <script type="text/javascript" src="{% static 'MDB-Pro_4.19.2/js/mdb.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'MDB-Pro_4.19.2/js/addons/datatables.min.js' %}"></script>
+    <!-- Your custom scripts (optional) -->
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            $('#dtWpisyDzis').DataTable({
+                "order": [[ 0, "desc" ]]
+            });
+            $('.dataTables_length').addClass('bs-select');
+        });
+        $(document).ready(function () {
+            $('#dtWpisyWczoraj').DataTable({
+                "order": [[ 0, "desc" ]]
+            });
+            $('.dataTables_length').addClass('bs-select');
+        });
+
+        $('.datepicker').datepicker({
+            format: 'yyyy-mm-dd',
+            formatSubmit: 'yyyy-mm-dd'
+        });
+
+        $(document).ready(function () {
+            $('#dtWiazki').DataTable({
+                "order": [[ 1, "asc" ]]
+            });
+            $('.dataTables_length').addClass('bs-select');
+        });
+        $(document).ready(function () {
+            $('#dtPracownik').DataTable({
+                "order": [[ 1, "asc" ]]
+            });
+            $('.dataTables_length').addClass('bs-select');
+        });
+        $(document).ready(function () {
+            $('#dtKlient').DataTable({
+                "order": [[ 1, "asc" ]]
+            });
+            $('.dataTables_length').addClass('bs-select');
+        });
+        $(document).ready(function () {
+            $('#dtGrupyRobocze').DataTable({
+                "order": [[ 1, "asc" ]]
+            });
+            $('.dataTables_length').addClass('bs-select');
+        });
+        $(document).ready(function () {
+            $('#dtDzialy').DataTable({
+                "order": [[ 1, "asc" ]]
+            });
+            $('.dataTables_length').addClass('bs-select');
+        });
+        $(document).ready(function () {
+            $('#dtBledy').DataTable({
+                "order": [[ 1, "asc" ]]
+            });
+            $('.dataTables_length').addClass('bs-select');
+        });
+
+        $(document).ready(function() {
+            $('.mdb-select').materialSelect();
+        });
+
+        // Material Select Destroy
+        $('.mdb-select').materialSelect({
+            destroy: true
+        });
+
+    </script>

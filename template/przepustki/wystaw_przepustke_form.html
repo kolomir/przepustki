@@ -1,0 +1,61 @@
+{% extends 'przepustki/base.html' %}
+{% load bootstrap %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="card col-md-6 my-3 mx-auto">
+            <div class="card-body">
+                <form method="post" role="form" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-row mb-3">
+                        <div class="col">
+                            <select name="pracownik" class="mdb-select md-form" id="id_pracownik" required  searchable="Search here...">
+                                <option value="" disabled selected>Dla kogo przepustka?</option>
+                                {% for result in pracownik %}
+                                <option value="{{ result.id }}">({{ result.nr_pracownika }}) {{ result.nazwisko }} {{ result.imie }}</option>
+                                {% endfor %}
+                            </select>
+                            <label class="mdb-main-label" for="id_pracownik">Nr pracownika</label>
+                        </div>
+                        <div class="col">
+                            <select name="rodzaj_wpisu" class="mdb-select md-form" id="id_rodzaj" required  searchable="Search here...">
+                                <option value="" disabled selected>Rodzaj wpisu</option>
+                                {% for result in rodzaj %}
+                                <option value="{{ result.id }}">{{ result.rodzaj }}</option>
+                                {% endfor %}
+                            </select>
+                            <label class="mdb-main-label" for="id_rodzaj">Rodzaj wpisu</label>
+                        </div>
+                    </div>
+                    <div class="form-row mb-3">
+                        <div class="col md-form input-with-post-icon datepicker">
+                            <label for="id_data_wyjscia">Data od...</label>
+                            <input type="text" placeholder="Data od..." step="1" maxlength="5" id="id_data_wyjscia" name="data_wyjscia" class=" form-control" required>
+                            <i class="fas fa-calendar input-prefix" tabindex=0></i>
+                        </div>
+                        <div class="col md-form input-with-post-icon timepicker" default="now">
+                            <input type="text" placeholder="Godzina od..." step="1" maxlength="5" id="id_godzina_wyjscia" name="godzina_wyjscia" class=" form-control" required>
+                            <label class="control-label" for="id_godzina_wyjscia">Godzina od...</label>
+                            <i class="fas fa-clock input-prefix"></i>
+                        </div>
+                    </div>
+                    <div class="form-row mb-3">
+                        <div class="col md-form input-with-post-icon datepicker">
+                            <label for="id_data_przyjscia">Data do...</label>
+                            <input type="text" placeholder="Data do..." step="1" maxlength="5" id="id_data_przyjscia" name="data_przyjscia" class=" form-control">
+                            <i class="fas fa-calendar input-prefix" tabindex=0></i>
+                        </div>
+                        <div class="col md-form input-with-post-icon timepicker" default="now">
+                            <input type="text" placeholder="Godzina do..." step="1" maxlength="5" id="id_godzina_przyjscia" name="godzina_przyjscia" class=" form-control">
+                            <label class="control-label" for="id_godzina_przyjscia">Godzina do...</label>
+                            <i class="fas fa-clock input-prefix"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="hidden" id="data_dodania_text" name="data_dodania" value={{ data_dodania }} class=" form-control">
+                        <button type="submit" class="btn btn-primary">Zapisz <i class="fas fa-save fa-lg"></i></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

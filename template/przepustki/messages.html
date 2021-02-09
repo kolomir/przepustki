@@ -1,0 +1,35 @@
+{% load bootstrap %}
+
+{% if messages %}
+    {% for message in messages %}
+        {% if message.tags == 'suuccess' %}
+            <div class="alert alert-success col-md-6 mx-auto" role="alert">
+                {{message}}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% elif message.tags == 'info' %}
+            <div class="alert alert-info col-md-6 mx-auto" role="alert">
+                {{message}}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% elif message.tags == 'warning' %}
+            <div class="alert alert-warning col-md-6 mx-auto" role="alert">
+                {{message}}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% elif message.tags == 'error' %}
+            <div class="alert alert-danger col-md-6 mx-auto" role="alert">
+                {{message}}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
