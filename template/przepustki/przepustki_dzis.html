@@ -33,9 +33,16 @@
                         <td>{{ wpis.rodzaj_wpisu }}</td>
                         <td>{{ wpis.autor_wpisu }}</td>
                         <td>{{ wpis.data_dodania }}</td>
+                        {% if user.is_authenticated %}
                         <td>
-                            #
+                            <a href="{% url 'wystaw_przepustke_edycja' wpis.id %}" class="btn btn-outline-primary btn-rounded waves-effect btn-sm mr-2">Edytuj</a>
+                            {% if wpis.cofnieta == 0 %}
+                            <a href="{% url 'usun_przepustke' wpis.id %}" class="btn btn-outline-danger btn-rounded waves-effect btn-sm">Usuń</a>
+                            {% else %}
+                            <a href="{% url 'przywroc_przepustke' wpis.id %}" class="btn btn-outline-success btn-rounded waves-effect btn-sm">Przywróć</a>
+                        {% endif %}
                         </td>
+                        {% endif %}
                     </tr>
                     {% endfor %}
                 </tbody>

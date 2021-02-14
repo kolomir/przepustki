@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Przepustka, Pracownik, RodzajWpisu, Dzial, Lokalizacja, Autor, Csv
 from django.contrib.auth.decorators import login_required
-from .forms import PrzepustkaForm, PracownikForm, SkasowacPracownik, DzialForm, CsvModelForm
+from .forms import PrzepustkaForm, SkasowacPrzepustka, PracownikForm, SkasowacPracownik, DzialForm, CsvModelForm
 from datetime import datetime, date, time, timedelta
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
@@ -48,41 +48,28 @@ def wystaw_przepustke(request):
     moja_Data = datetime.now()
     data_dodania = moja_Data.strftime("%Y-%m-%d")
 
-    data_wyjscie = request.POST.get('data_wyjscia')
-    godz_wyjscie = request.POST.get('godzina_wyjscia')
-    data_przyjscie = request.POST.get('data_przyjscia')
-    godz_przyjscie = request.POST.get('godzina_przyjscia')
-
     zmiana_I_start = 6
     zmiana_II_start = 14
     zmiana_III_start = 22
 
-    #===================================================================
-    print('data_dodania: ', data_dodania)
-    print('data_wyjscia: ', data_wyjscie)
-    print('godzina_wyjscia: ', godz_wyjscie)
-    print('data_przyjscia: ', data_przyjscie)
-    print('godzina_przyjscia: ', godz_przyjscie)
-    if data_przyjscie == "":
-        print('puste')
-    else:
-        print('z datą')
-    #====================================================================
+    data_wyjscie = request.POST.get('data_wyjscia')
+    godz_wyjscie = request.POST.get('godzina_wyjscia')
+    data_przyjscie = request.POST.get('data_przyjscia')
+    godz_przyjscie = request.POST.get('godzina_przyjscia')
+    wpis = request.POST.get('rodzaj_wpisu')
+    pracownik_wpis = request.POST.get('pracownik')
+
 
     if godz_przyjscie == "":
-        print("nie ma godziny powrotu")
         godzina_wyjscia = "%s%s" % (godz_wyjscie[0], godz_wyjscie[1])
         if int(godzina_wyjscia) >= zmiana_I_start and int(godzina_wyjscia) < zmiana_II_start:
-            print("I zmiana")
             data_przyjscie = data_wyjscie
             godzina_przyjscie = '14:00'
         elif int(godzina_wyjscia) >= zmiana_II_start and int(godzina_wyjscia) < zmiana_III_start:
-            print("II zmiana")
             data_przyjscie = data_wyjscie
             godzina_przyjscie = '22:00'
         elif (int(godzina_wyjscia) >= zmiana_III_start and int(godzina_wyjscia) <= 23) or (
                 int(godzina_wyjscia) >= 0 and int(godzina_wyjscia) < zmiana_I_start):
-            print("III zmiana")
             data_przyjscie = datetime.strptime(data_wyjscie, '%Y-%m-%d').date() + timedelta(days=1)
             godzina_przyjscie = '06:00'
         else:
@@ -90,7 +77,21 @@ def wystaw_przepustke(request):
     else:
         print("godzina powrotu: ", godz_przyjscie)
 
-
+    #===================================================================
+    #print('data_dodania: ', data_dodania)
+    #print('data_wyjscia: ', data_wyjscie)
+    #print('godzina_wyjscia: ', godz_wyjscie)
+    #print('data_przyjscia: ', data_przyjscie)
+    #print('godzina_przyjscia: ', godz_przyjscie)
+    #print('wpis: ', wpis)
+    #rodzaj_w = RodzajWpisu.objects.get(id=wpis).rodzaj
+    #print('rodzaj:', rodzaj_w)
+    #print('pracownik_wpis: ', pracownik_wpis)
+    #if data_przyjscie == "":
+    #    print('puste')
+    #else:
+    #    print('z datą')
+    #====================================================================
 
 
     if form_przepustka.is_valid():
@@ -101,8 +102,15 @@ def wystaw_przepustke(request):
         form_przepustka.instance.autor_wpisu = autor
         form_przepustka.save()
         if request.method == 'POST':
-            subject = 'Welcome to DataFlair'
-            message = 'Hope you are enjoying your Django Tutorials'
+
+            subject = 'PRZEPUSTKA - ' + data_dodania
+            message = '--------------------------------------------\n'
+            #message +='P R Z E P U S T K A\n'
+            message +=RodzajWpisu.objects.get(id=wpis).rodzaj + '\n'
+            message +='--------------------------------------------\n'
+            message +='Przepustka dla: ' + Pracownik.objects.get(id=pracownik_wpis).nazwisko + ' ' + Pracownik.objects.get(id=pracownik_wpis).imie + '\n'
+            message +='Wyjście w dniu: ' + data_wyjscie + ' o godzinie: ' + godz_wyjscie + '\n'
+            message +='--------------------------------------------\n'
             recepient = 'mirek.kolczynski@gmail.com'
             send_mail(subject, message, EMAIL_HOST_USER, [recepient], fail_silently=False)
         return redirect(przepustki_dzis)
@@ -115,6 +123,65 @@ def wystaw_przepustke(request):
     }
 
     return render(request, 'przepustki/wystaw_przepustke_form.html', context)
+
+
+@login_required
+def edytuj_przepustke(request, id):
+    wpis = get_object_or_404(Przepustka, pk=id)
+
+    wpisy = PrzepustkaForm(request.POST or None, request.FILES or None, instance=wpis)
+    pracownik = Pracownik.objects.filter(zatrudniony=True).order_by('nr_pracownika')
+    rodzaj = RodzajWpisu.objects.filter(aktywny=True).order_by('rodzaj')
+    moja_Data = datetime.now()
+    data_dodania = moja_Data.strftime("%Y-%m-%d")
+
+    if wpisy.is_valid():
+        wpisy.save()
+        return redirect(przepustki_dzis)
+
+    context = {
+        'wpisy': wpisy,
+        'wpis': wpis,
+        'pracownik': pracownik,
+        'rodzaj':rodzaj,
+        'data_dodania': data_dodania
+    }
+    print('wpisy:', wpisy.instance.pracownik.imie)
+    return render(request, 'przepustki/wystaw_przepustke_edycja_form.html', context)
+
+
+@login_required
+def usun_przepustke(request, id):
+    wpis = get_object_or_404(Przepustka, pk=id)
+    wpisy = SkasowacPrzepustka(request.POST or None, request.FILES or None, instance=wpis)
+
+    if wpisy.is_valid():
+        kasuj = wpisy.save(commit=False)
+        kasuj.cofnieta = 1
+        kasuj.save()
+        return redirect(przepustki_dzis)
+
+    context = {
+        'wpis': wpis
+    }
+    return render(request, 'przepustki/potwierdz.html', context)
+
+
+@login_required
+def przywroc_przepustke(request, id):
+    wpis = get_object_or_404(Przepustka, pk=id)
+    wpisy = SkasowacPrzepustka(request.POST or None, request.FILES or None, instance=wpis)
+
+    if wpisy.is_valid():
+        kasuj = wpisy.save(commit=False)
+        kasuj.cofnieta = 0
+        kasuj.save()
+        return redirect(przepustki_dzis)
+
+    context = {
+        'wpis': wpis
+    }
+    return render(request, 'przepustki/potwierdz.html', context)
 # =============================================================================================
 
 
@@ -330,9 +397,9 @@ def filtrowanie(request):
     if is_valid_queryparam(pracownik_contains_query):
         qs = qs.filter(pracownik__icontains=pracownik_contains_query)
     if is_valid_queryparam(data_od):
-        qs = qs.filter(data_dodania__gte=data_od + ' 00:00:00')
+        qs = qs.filter(data_wyjscia__gte=data_od)
     if is_valid_queryparam(data_do):
-        qs = qs.filter(data_dodania__lt=data_do + ' 23:59:59')
+        qs = qs.filter(data_wyjscia__lte=data_do)
     if is_valid_queryparam(lokalizacja_contains_query):
         qs = qs.filter(pracownik__dzial__lokalizacja__lokalizacja__icontains=lokalizacja_contains_query)
     if is_valid_queryparam(dzial_contains_query):
@@ -382,6 +449,45 @@ def filtrowanie(request):
         'queryset': qs,
     }
     return render(request, 'przepustki/eksport.html', context)
+
+
+@login_required
+def zestawienie(request):
+    qs=""
+    data_od = request.GET.get('data_od')
+    data_do = request.GET.get('data_do')
+    eksport = request.GET.get('eksport')
+    print('data_od:', data_od)
+    print('data_do:', data_do)
+
+    if eksport == 'on':
+        qs = Przepustka.objects.filter(data_wyjscia__gte=data_od, data_przyjscia__lt=data_do)
+
+        for obj in qs:
+            print('data_wyjscia_od:', obj.pracownik.imie)
+            # print('data_wyjscia_do:', obj.pracownik)
+    '''    
+    qs = Przepustka.objects.all()
+
+    data_od = request.GET.get('data_od')
+    data_do = request.GET.get('data_do')
+    eksport = request.GET.get('eksport')
+
+    if is_valid_queryparam(data_od):
+        qs = qs.filter(data_dodania__gte=data_od + ' 00:00:00')
+    if is_valid_queryparam(data_do):
+        qs = qs.filter(data_dodania__lt=data_do + ' 23:59:59')
+
+    if eksport == 'on':
+        for obj in qs:
+            print('data_wyjscia_od:', obj.pracownik.imie)
+            #print('data_wyjscia_do:', obj.pracownik)
+    '''
+
+    context = {
+        'queryset': qs,
+    }
+    return render(request, 'przepustki/zestawienie.html', context)
 # =============================================================================================
 
 

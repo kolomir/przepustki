@@ -1,6 +1,8 @@
 from django.urls import path
-from .views import przepustki_dzis,wystaw_przepustke,nowy_pracownik, edytuj_pracownik, usun_pracownik, przywroc_pracownik, wpisyPracownik, \
-                    nowy_dzial, wpisyDzial, edytuj_dzial, usun_dzial, przywroc_dzial, login_request, logout_request, filtrowanie, upload_file_view
+from .views import przepustki_dzis,wystaw_przepustke,edytuj_przepustke, usun_przepustke, przywroc_przepustke, \
+                   nowy_pracownik, edytuj_pracownik, usun_pracownik, przywroc_pracownik, wpisyPracownik, \
+                   nowy_dzial, wpisyDzial, edytuj_dzial, usun_dzial, przywroc_dzial, login_request, logout_request, \
+                   zestawienie, filtrowanie, upload_file_view
 
 
 urlpatterns = [
@@ -14,6 +16,7 @@ urlpatterns = [
     #= Edycja =============================================
     path('pracownikFormEdycja/<int:id>/', edytuj_pracownik, name='pracownikFormEdycja'),
     path('dzialFormEdycja/<int:id>/', edytuj_dzial, name='dzialFormEdycja'),
+    path('wystaw_przepustke_edycja_form/<int:id>/', edytuj_przepustke, name='wystaw_przepustke_edycja'),
 
     #= Zestawienie ========================================
     path('pracownik/', wpisyPracownik, name='pracownik'),
@@ -22,14 +25,17 @@ urlpatterns = [
     #= Kasowanie ==========================================
     path('pracownikUsun/<int:id>/', usun_pracownik, name='pracownikUsun'),
     path('dzialUsun/<int:id>/', usun_dzial, name='dzialUsun'),
+    path('usun_przepustke/<int:id>/', usun_przepustke, name='usun_przepustke'),
 
     #= Przywracanie =======================================
     path('pracownikPrzywroc/<int:id>/', przywroc_pracownik, name='pracownikPrzywroc'),
     path('dzialPrzywroc/<int:id>/', przywroc_dzial, name='dzialPrzywroc'),
+    path('przywroc_przepustke/<int:id>/', przywroc_przepustke, name='przywroc_przepustke'),
 
     #= Pozostałe ==========================================
     path('login/', login_request, name='login'),
     path('logout/', logout_request, name='logout'),
     path('eksport/', filtrowanie, name='filtrowanie'),
     path('upload/', upload_file_view, name='upload'),
+    path('zestawienie/', zestawienie, name='zestawienie'),
 ]

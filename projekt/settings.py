@@ -42,7 +42,15 @@ INSTALLED_APPS = [
     'bootstrapform',
 ]
 
-#DataFlair
+#Email Praca
+#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+#EMAIL_HOST = '192.168.13.4'
+#EMAIL_USE_TLS = False
+#EMAIL_PORT = 22225
+#EMAIL_HOST_USER = ''
+#EMAIL_HOST_PASSWORD = ''
+
+#Email dom
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True

@@ -1,0 +1,37 @@
+{% extends 'przepustki/base.html' %}
+{% load bootstrap %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="card col-md-6 my-3 mx-auto text-white green darken-1">
+            <div class="card-body">
+                <h2>Zestawienie za okres:</h2>
+            </div>
+        </div>
+        <div class="card col-md-6 my-3 mx-auto">
+            <div class="card-body">
+
+                <form method="get">
+
+                    <div class="form-row mb-3">
+                        <div class="col md-form">
+                            <label class="control-label" for="id_od">Data od</label>
+                            <input id="id_od" class="form-control" type="search" name="data_od" placeholder="Data od..." />
+                        </div>
+                        <div class="col md-form">
+                            <label class="control-label" for="id_do">Data do</label>
+                            <input id="id_do" class="form-control" type="search" name="data_do" placeholder="Data do..." />
+                        </div>
+                    </div>
+                    <input type="hidden" id="eksport" name="eksport" value="on">
+                    <div class="form-row mb-3">
+                        <div class="col">
+                            <button type="submit" class="btn btn-outline-primary btn-rounded waves-effect">Zapisz</button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
