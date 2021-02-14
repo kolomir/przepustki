@@ -25,6 +25,7 @@ def przepustki_dzis(request):
 
     przepustki_dzis = Przepustka.objects.filter(cofnieta=False, data_wyjscia=date.today()).order_by('-id')[:50]
     przepustki_wczoraj = Przepustka.objects.filter(cofnieta=False, data_wyjscia=date.today()-timedelta(1)).order_by('-id')[:50]
+    przepustki_przyszle = Przepustka.objects.filter(cofnieta=False, data_wyjscia__gt=date.today()).order_by('-id')[:50]
     lokalizacja = Lokalizacja.objects.filter(aktywny=True).order_by('lokalizacja')
     przepustki_suma = Przepustka.objects.all().values('pracownik__dzial__lokalizacja__lokalizacja').annotate(licz=Count('pracownik__dzial__lokalizacja__lokalizacja'))
     print(lokalizacja)
@@ -34,6 +35,7 @@ def przepustki_dzis(request):
     context = {
         'przepustki_dzis': przepustki_dzis,
         'przepustki_wczoraj': przepustki_wczoraj,
+        'przepustki_przyszle': przepustki_przyszle,
         'przepustki_suma': przepustki_suma
     }
 

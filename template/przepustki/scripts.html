@@ -23,6 +23,12 @@
             });
             $('.dataTables_length').addClass('bs-select');
         });
+        $(document).ready(function () {
+            $('#dtWpisyPrzyszle').DataTable({
+                "order": [[ 0, "desc" ]]
+            });
+            $('.dataTables_length').addClass('bs-select');
+        });
 
         $('.datepicker').datepicker({
             format: 'yyyy-mm-dd',
