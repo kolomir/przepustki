@@ -8,7 +8,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from django.http import HttpResponse
 import csv
-from django.db.models import Count
+from django.db.models import Count, Sum
 from projekt.settings import EMAIL_HOST_USER
 from django.core.mail import send_mail
 
@@ -125,17 +125,29 @@ def wystaw_przepustke(request):
     }
 
     return render(request, 'przepustki/wystaw_przepustke_form.html', context)
-
-
+'''
+def edytuj_przepustke(request, id):
+    wpis = get_object_or_404(Przepustka, pk=id)
+    wpisy = PrzepustkaForm(request.POST or None, request.FILES or None, instance=wpis)
+    if wpisy.is_valid():
+        wpisy.save()
+        return redirect(przepustki_dzis)
+    context = {
+        'wpisy': wpisy
+    }
+    return render(request, 'przepustki/wystaw_przepustke_edycja_form.html', context)
+'''
 @login_required
 def edytuj_przepustke(request, id):
     wpis = get_object_or_404(Przepustka, pk=id)
 
     wpisy = PrzepustkaForm(request.POST or None, request.FILES or None, instance=wpis)
-    pracownik = Pracownik.objects.filter(zatrudniony=True).order_by('nr_pracownika')
+    pracownicy = Pracownik.objects.filter(zatrudniony=True).order_by('nr_pracownika')
     rodzaj = RodzajWpisu.objects.filter(aktywny=True).order_by('rodzaj')
     moja_Data = datetime.now()
     data_dodania = moja_Data.strftime("%Y-%m-%d")
+    print('data_dodania:', data_dodania)
+    print('data_dodania:', wpisy.instance.data_dodania)
 
     if wpisy.is_valid():
         wpisy.save()
@@ -144,7 +156,7 @@ def edytuj_przepustke(request, id):
     context = {
         'wpisy': wpisy,
         'wpis': wpis,
-        'pracownik': pracownik,
+        'pracownik': pracownicy,
         'rodzaj':rodzaj,
         'data_dodania': data_dodania
     }
@@ -455,19 +467,40 @@ def filtrowanie(request):
 
 @login_required
 def zestawienie(request):
-    qs=""
+    #pracownik = Pracownik.objects.all()
+    qs = Przepustka.objects.all()
+
     data_od = request.GET.get('data_od')
     data_do = request.GET.get('data_do')
     eksport = request.GET.get('eksport')
     print('data_od:', data_od)
     print('data_do:', data_do)
 
-    if eksport == 'on':
-        qs = Przepustka.objects.filter(data_wyjscia__gte=data_od, data_przyjscia__lt=data_do)
+    przepustki_suma = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('pracownik__imie').annotate(licz=Sum('autor_wpisu_id'))
+    print('pracownik__imie')
+    print(przepustki_suma.pracownik__imie)
 
-        for obj in qs:
-            print('data_wyjscia_od:', obj.pracownik.imie)
-            # print('data_wyjscia_do:', obj.pracownik)
+    print("=================")
+    #for obj in przepustki_suma:
+        #print(obj.pracownik__imie['imie'])
+
+    print(przepustki_suma)
+
+    if is_valid_queryparam(data_od):
+        qs = qs.filter(data_wyjscia__gte=data_od)
+    if is_valid_queryparam(data_do):
+        qs = qs.filter(data_wyjscia__lte=data_do)
+    #if is_valid_queryparam(data_do):
+    #    qs = qs.values('pracownik__imie').annotate(licz=Sum('autor_wpisu_id'))
+
+    print(qs)
+    if eksport == 'on':
+        for obj in przepustki_suma:
+            a=1
+            #dla_pracownika = "{} {}".format(obj.pracownik.nazwisko, obj.pracownik.imie)
+            #print(obj.pracownik_id + ' - ' + Sum)
+        print('jestem')
+
     '''    
     qs = Przepustka.objects.all()
 

@@ -67,7 +67,7 @@ class SkasowacRodzajWpisu(ModelForm):
 class PrzepustkaForm(ModelForm):
     class Meta:
         model = Przepustka
-        fields = ['pracownik','data_wyjscia','godzina_wyjscia','data_przyjscia','godzina_przyjscia','rodzaj_wpisu','cofnieta','data_dodania']
+        fields = ['pracownik','data_wyjscia','godzina_wyjscia','data_przyjscia','godzina_przyjscia','rodzaj_wpisu','cofnieta']
 
 
 class SkasowacPrzepustka(ModelForm):

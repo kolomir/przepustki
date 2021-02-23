@@ -27,7 +27,7 @@ class Pracownik(models.Model):
     zatrudniony = models.BooleanField(default=True)
 
     def __str__(self):
-        return str(self.nr_pracownika)
+        return '(' + str(self.nr_pracownika) + ') ' + self.nazwisko + ' ' + self.imie
 
 
 class Autor(models.Model):
@@ -54,7 +54,7 @@ class Przepustka(models.Model):
     godzina_przyjscia = models.TimeField('godzina przyjscia', blank=True, null=True)
     rodzaj_wpisu = models.ForeignKey(RodzajWpisu, on_delete=models.CASCADE, default=1)
     autor_wpisu = models.ForeignKey(Autor, on_delete=models.CASCADE)
-    data_dodania = models.DateTimeField('data dodania', blank=True, null=True)
+    data_dodania = models.DateField('data dodania', blank=True, null=True)
     cofnieta = models.BooleanField(default=False)
 
     def przepustki(self):
