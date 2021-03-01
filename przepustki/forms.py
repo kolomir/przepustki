@@ -70,6 +70,57 @@ class PrzepustkaForm(ModelForm):
         fields = ['pracownik','data_wyjscia','godzina_wyjscia','data_przyjscia','godzina_przyjscia','rodzaj_wpisu','cofnieta']
 
 
+class PrzepustkaEditForm(forms.ModelForm):
+    data_wyjscia = forms.DateField(
+        widget=forms.DateInput(
+            attrs={
+                'class': ' form-control'
+            },
+            format='%Y-%m-%d'
+        ),
+        input_formats=['%Y-%m-%d']
+    )
+    godzina_wyjscia = forms.TimeField(
+        widget=forms.TimeInput(
+            attrs={
+                'class': ' form-control'
+            },
+            format='%H:%M'
+        ),
+        input_formats=['%H:%M']
+    )
+    data_przyjscia = forms.DateField(
+        widget=forms.DateInput(
+            attrs={
+                'class': ' form-control'
+            },
+            format='%Y-%m-%d'
+        ),
+        input_formats=['%Y-%m-%d']
+    )
+    godzina_przyjscia = forms.TimeField(
+        widget=forms.TimeInput(
+            attrs={
+                'class': ' form-control'
+            },
+            format='%H:%M'
+        ),
+        input_formats=['%H:%M']
+    )
+
+    class Meta:
+        model = Przepustka
+        fields = [
+            'pracownik',
+            'data_wyjscia',
+            'godzina_wyjscia',
+            'data_przyjscia',
+            'godzina_przyjscia',
+            'rodzaj_wpisu',
+            'cofnieta'
+        ]
+
+
 class SkasowacPrzepustka(ModelForm):
     class Meta:
         model = Przepustka

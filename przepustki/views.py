@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Przepustka, Pracownik, RodzajWpisu, Dzial, Lokalizacja, Autor, Csv
 from django.contrib.auth.decorators import login_required
-from .forms import PrzepustkaForm, SkasowacPrzepustka, PracownikForm, SkasowacPracownik, DzialForm, CsvModelForm
+from .forms import PrzepustkaForm, SkasowacPrzepustka, PracownikForm, PrzepustkaEditForm, SkasowacPracownik, DzialForm, CsvModelForm
 from datetime import datetime, date, time, timedelta
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
@@ -141,7 +141,7 @@ def edytuj_przepustke(request, id):
 def edytuj_przepustke(request, id):
     wpis = get_object_or_404(Przepustka, pk=id)
 
-    wpisy = PrzepustkaForm(request.POST or None, request.FILES or None, instance=wpis)
+    wpisy = PrzepustkaEditForm(request.POST or None, request.FILES or None, instance=wpis)
     pracownicy = Pracownik.objects.filter(zatrudniony=True).order_by('nr_pracownika')
     rodzaj = RodzajWpisu.objects.filter(aktywny=True).order_by('rodzaj')
     moja_Data = datetime.now()

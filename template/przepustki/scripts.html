@@ -35,6 +35,10 @@
             formatSubmit: 'yyyy-mm-dd'
         });
 
+        $('#date_timepicker_end').datepicker({
+            dateFormat: 'dd-mm-yyyy' //any valid format that you want to have
+        });
+
         $(document).ready(function () {
             $('#dtWiazki').DataTable({
                 "order": [[ 1, "asc" ]]

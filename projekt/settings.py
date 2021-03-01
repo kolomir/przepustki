@@ -125,6 +125,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'pl-pl'
 
 Time_zone = 'Europe/Warsaw'
+DATE_INPUT_FORMATS = ['%Y-%m-%d']
 
 USE_I18N = True
 
