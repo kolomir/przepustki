@@ -27,7 +27,7 @@
                     {% for wpis in przepustki_przyszle %}
                     <tr>
                         <th scope="row">{{ wpis.id }}</th>
-                        <td>( {{ wpis.pracownik }} ) {{ wpis.pracownik.nazwisko }} {{ wpis.pracownik.imie }}</td>
+                        <td>{{ wpis.pracownik }}</td>
                         <td>{{ wpis.data_wyjscia }} {{ wpis.godzina_wyjscia }}</td>
                         <td>{{ wpis.data_przyjscia }} {{ wpis.godzina_przyjscia }}</td>
                         <td>{{ wpis.rodzaj_wpisu }}</td>
@@ -88,7 +88,7 @@
                     {% for wpis in przepustki_dzis %}
                     <tr>
                         <th scope="row">{{ wpis.id }}</th>
-                        <td>( {{ wpis.pracownik }} ) {{ wpis.pracownik.nazwisko }} {{ wpis.pracownik.imie }}</td>
+                        <td>{{ wpis.pracownik }}</td>
                         <td>{{ wpis.data_wyjscia }} {{ wpis.godzina_wyjscia }}</td>
                         <td>{{ wpis.data_przyjscia }} {{ wpis.godzina_przyjscia }}</td>
                         <td>{{ wpis.rodzaj_wpisu }}</td>
@@ -149,7 +149,7 @@
                     {% for wpis in przepustki_wczoraj %}
                     <tr>
                         <th scope="row">{{ wpis.id }}</th>
-                        <td>( {{ wpis.pracownik }} ) {{ wpis.pracownik.nazwisko }} {{ wpis.pracownik.imie }}</td>
+                        <td>{{ wpis.pracownik }}</td>
                         <td>{{ wpis.data_wyjscia }} {{ wpis.godzina_wyjscia }}</td>
                         <td>{{ wpis.data_przyjscia }} {{ wpis.godzina_przyjscia }}</td>
                         <td>{{ wpis.rodzaj_wpisu }}</td>

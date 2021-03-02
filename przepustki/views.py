@@ -28,9 +28,6 @@ def przepustki_dzis(request):
     przepustki_przyszle = Przepustka.objects.filter(cofnieta=False, data_wyjscia__gt=date.today()).order_by('-id')[:50]
     lokalizacja = Lokalizacja.objects.filter(aktywny=True).order_by('lokalizacja')
     przepustki_suma = Przepustka.objects.all().values('pracownik__dzial__lokalizacja__lokalizacja').annotate(licz=Count('pracownik__dzial__lokalizacja__lokalizacja'))
-    print(lokalizacja)
-    print('=======================')
-    print(przepustki_suma)
 
     context = {
         'przepustki_dzis': przepustki_dzis,
@@ -49,6 +46,10 @@ def wystaw_przepustke(request):
     rodzaj = RodzajWpisu.objects.filter(aktywny=True).order_by('rodzaj')
     moja_Data = datetime.now()
     data_dodania = moja_Data.strftime("%Y-%m-%d")
+    ile = Przepustka.objects.last()
+    id = ile.id +1
+    print('id: ',id)
+    rok = datetime.now().strftime("%Y")
 
     zmiana_I_start = 6
     zmiana_II_start = 14
@@ -58,8 +59,12 @@ def wystaw_przepustke(request):
     godz_wyjscie = request.POST.get('godzina_wyjscia')
     data_przyjscie = request.POST.get('data_przyjscia')
     godz_przyjscie = request.POST.get('godzina_przyjscia')
+    dat_dod = request.POST.get('data_dodania')
     wpis = request.POST.get('rodzaj_wpisu')
     pracownik_wpis = request.POST.get('pracownik')
+    print("--> godzina powrotu: ", godz_przyjscie)
+    print("--> data_dodania: ", data_dodania)
+    print("--> dat_dod: ", dat_dod)
 
 
     if godz_przyjscie == "":
@@ -102,16 +107,21 @@ def wystaw_przepustke(request):
             form_przepustka.instance.data_przyjscia = data_przyjscie
             form_przepustka.instance.godzina_przyjscia = godzina_przyjscie
         form_przepustka.instance.autor_wpisu = autor
+        form_przepustka.instance.data_dodania = request.POST.get('data_dodania')
         form_przepustka.save()
         if request.method == 'POST':
 
-            subject = 'PRZEPUSTKA - ' + data_dodania
+            subject = 'PRZEPUSTKA nr ' + str(id) + '/' + rok + ' - wystawiona w dniu: ' + data_dodania
             message = '--------------------------------------------\n'
             #message +='P R Z E P U S T K A\n'
             message +=RodzajWpisu.objects.get(id=wpis).rodzaj + '\n'
-            message +='--------------------------------------------\n'
+            message +='--------------------------------------------\n\n'
             message +='Przepustka dla: ' + Pracownik.objects.get(id=pracownik_wpis).nazwisko + ' ' + Pracownik.objects.get(id=pracownik_wpis).imie + '\n'
             message +='Wyjście w dniu: ' + data_wyjscie + ' o godzinie: ' + godz_wyjscie + '\n'
+            if (godz_przyjscie) == "":
+                message += 'Bez powrotu do końca zmiany\n\n'
+            else:
+                message += 'Powrót: ' + data_przyjscie + ' o godzinie: ' + godz_przyjscie + '\n\n'
             message +='--------------------------------------------\n'
             recepient = 'mirek.kolczynski@gmail.com'
             send_mail(subject, message, EMAIL_HOST_USER, [recepient], fail_silently=False)
