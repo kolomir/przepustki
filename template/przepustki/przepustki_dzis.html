@@ -93,7 +93,7 @@
                         <td>{{ wpis.data_przyjscia }} {{ wpis.godzina_przyjscia }}</td>
                         <td>{{ wpis.rodzaj_wpisu }}</td>
                         <td>{{ wpis.autor_wpisu }}</td>
-                        <td>{{ wpis.data_dodania }}</td>
+                        <td>{{ wpis.data_dodania }} | {{ czas }} | {{ wpis.godzina_przyjscia }}:00</td>
                         {% if user.is_authenticated %}
                         <td>
                             <a href="{% url 'wystaw_przepustke_edycja' wpis.id %}" class="btn btn-outline-primary btn-rounded waves-effect btn-sm mr-2">Edytuj</a>

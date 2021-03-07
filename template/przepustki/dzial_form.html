@@ -14,14 +14,7 @@
                     <div class="form-row mb-3">
                         <div class="col md-form">
                             <label class="control-label" for="id_dzial">Dział</label>
-                            <input maxlength="40" placeholder="Dział" type="text" id="id_dzial" name="dzial" class=" form-control" required>
-                            <select name="lokalizacja" class="mdb-select md-form" id="id_lokalizacja" required  searchable="Search here...">
-                                <option value="" disabled selected>Lokalizacja...</option>
-                                {% for result in lokalizacja %}
-                                <option value="{{ result.id }}">{{ result.lokalizacja }}</option>
-                                {% endfor %}
-                            </select>
-                            <label class="mdb-main-label">Lokalizacja</label>
+                            <input placeholder="Dział" type="text" id="id_dzial" name="dzial" class=" form-control" required>
                         </div>
                     </div>
                     <div class="form-group">

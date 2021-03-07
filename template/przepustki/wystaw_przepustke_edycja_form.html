@@ -2,27 +2,24 @@
 {% load bootstrap %}
 {% block content %}
     <div class="container-fluid">
+        <div class="card col-md-6 my-3 mx-auto text-white green darken-1">
+            <div class="card-body">
+                <h2>Edytuj przepustkę</h2>
+            </div>
+        </div>
         <div class="card col-md-6 my-3 mx-auto">
             <div class="card-body">
                 <form method="post" role="form" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="form-row mb-3">
-                        <div class="col">
-                            <select name="pracownik" class="mdb-select md-form" id="id_pracownik" required  searchable="Search here...">
-                                <option value="{{ wpis.pracownik_id }}">{{ wpis.pracownik }}</option>
-                                {% for result in pracownik %}
-                                <option value="{{ result.id }}">({{ result.nr_pracownika }}) {{ result.nazwisko }} {{ result.imie }}</option>
-                                {% endfor %}
-                            </select>
+                        <div class="col md-form">
+                            <input type="text" id="id_pracownik2" name="pracownik2" class=" form-control" disabled value="{{ wpis.pracownik }}">
+                            <input type="hidden" id="id_pracownik" name="pracownik" value={{ wpis.pracownik_id }} class=" form-control">
                             <label class="mdb-main-label" for="id_pracownik">Nr pracownika</label>
                         </div>
-                        <div class="col">
-                            <select name="rodzaj_wpisu" class="mdb-select md-form" id="id_rodzaj" required  searchable="Search here...">
-                                <option value="{{ wpis.rodzaj_wpisu_id }}">{{ wpis.rodzaj_wpisu.rodzaj }}</option>
-                                {% for result in rodzaj %}
-                                <option value="{{ result.id }}">{{ result.rodzaj }}</option>
-                                {% endfor %}
-                            </select>
+                        <div class="col md-form">
+                            <input type="text" id="id_rodzaj2" name="rodzaj_wpisu2" class=" form-control" disabled value="{{ wpis.rodzaj_wpisu.rodzaj }}">
+                            <input type="hidden" id="id_rodzaj" name="rodzaj_wpisu" value={{ wpis.rodzaj_wpisu_id }} class=" form-control">
                             <label class="mdb-main-label" for="id_rodzaj">Rodzaj wpisu</label>
                         </div>
                     </div>

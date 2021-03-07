@@ -27,6 +27,11 @@
                             <input maxlength="20" placeholder="Nr pracownika" type="number" id="id_nr_pracownika" name="nr_pracownika" class=" form-control" required value="{{ wpis.nr_pracownika }}">
                         </div>
                         <div class="col">
+
+                        </div>
+                    </div>
+                    <div class="form-row mb-3">
+                        <div class="col">
                             <select name="dzial" class="mdb-select md-form" id="id_dzial" required  searchable="Search here...">
                                 <option value="{{ wpis.id }}" selected>{{ wpis.dzial }}</option>
                                 {% for result in dzial %}
@@ -34,6 +39,15 @@
                                 {% endfor %}
                             </select>
                             <label class="mdb-main-label">Dział</label>
+                        </div>
+                        <div class="col">
+                            <select name="lokalizacja" class="mdb-select md-form" id="id_lokalizacja" required  searchable="Search here..">
+                                <option value="{{ wpis.id }}" selected>{{ wpis.lokalizacja }}</option>
+                                {% for result in lokalizacja %}
+                                <option value="{{ result.id }}">{{ result.lokalizacja }}</option>
+                                {% endfor %}
+                            </select>
+                            <label class="mdb-main-label">Lokalizacja</label>
                         </div>
                     </div>
                     <div class="form-group">

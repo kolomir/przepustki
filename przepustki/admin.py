@@ -11,16 +11,16 @@ class LokalizacjaAdmin(admin.ModelAdmin):
 
 @admin.register(Dzial)
 class DzialAdmin(admin.ModelAdmin):
-    list_display = ('dzial', 'lokalizacja', 'aktywny')
-    list_filter = ('lokalizacja', 'aktywny',)
-    search_fields = ('dzial', 'lokalizacja')
+    list_display = ('dzial', 'aktywny')
+    list_filter = ('aktywny',)
+    search_fields = ('dzial',)
 
 
 @admin.register(Pracownik)
 class PracownikAdmin(admin.ModelAdmin):
-    list_display = ('nr_pracownika','imie','nazwisko','dzial','zatrudniony')
-    list_filter = ('dzial','zatrudniony')
-    search_fields = ('nr_pracownika','nazwisko')
+    list_display = ('nr_pracownika','imie','nazwisko','dzial', 'lokalizacja','zatrudniony')
+    list_filter = ('dzial','zatrudniony', 'lokalizacja')
+    search_fields = ('nr_pracownika','nazwisko', 'lokalizacja')
 
 
 @admin.register(Autor)

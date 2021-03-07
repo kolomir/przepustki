@@ -11,8 +11,7 @@ class Lokalizacja(models.Model):
 
 
 class Dzial(models.Model):
-    dzial = models.CharField(max_length=20, unique=False)
-    lokalizacja = models.ForeignKey(Lokalizacja, on_delete=models.CASCADE)
+    dzial = models.CharField(max_length=60, unique=False)
     aktywny = models.BooleanField(default=True)
 
     def __str__(self):
@@ -21,9 +20,10 @@ class Dzial(models.Model):
 
 class Pracownik(models.Model):
     nr_pracownika = models.DecimalField(max_digits=4, decimal_places=0, unique=True)
-    imie = models.CharField(max_length=20)
-    nazwisko = models.CharField(max_length=40)
+    imie = models.CharField(max_length=30)
+    nazwisko = models.CharField(max_length=60)
     dzial = models.ForeignKey(Dzial, on_delete=models.CASCADE)
+    lokalizacja = models.ForeignKey(Lokalizacja, on_delete=models.CASCADE)
     zatrudniony = models.BooleanField(default=True)
 
     def __str__(self):

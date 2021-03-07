@@ -27,13 +27,21 @@ def przepustki_dzis(request):
     przepustki_wczoraj = Przepustka.objects.filter(cofnieta=False, data_wyjscia=date.today()-timedelta(1)).order_by('-id')[:50]
     przepustki_przyszle = Przepustka.objects.filter(cofnieta=False, data_wyjscia__gt=date.today()).order_by('-id')[:50]
     lokalizacja = Lokalizacja.objects.filter(aktywny=True).order_by('lokalizacja')
-    przepustki_suma = Przepustka.objects.all().values('pracownik__dzial__lokalizacja__lokalizacja').annotate(licz=Count('pracownik__dzial__lokalizacja__lokalizacja'))
+    przepustki_suma = Przepustka.objects.all().values('pracownik__lokalizacja__lokalizacja').annotate(licz=Count('pracownik__lokalizacja__lokalizacja'))
+    print(przepustki_suma)
+    czas_teraz = datetime.now()
+    czas = czas_teraz.strftime("%H:%M")
+    print(czas)
+    for czasy in przepustki_dzis:
+        if str(czasy.godzina_przyjscia) > czas:
+            print(czasy.godzina_przyjscia)
 
     context = {
         'przepustki_dzis': przepustki_dzis,
         'przepustki_wczoraj': przepustki_wczoraj,
         'przepustki_przyszle': przepustki_przyszle,
-        'przepustki_suma': przepustki_suma
+        'przepustki_suma': przepustki_suma,
+        'czas': str(czas),
     }
 
     return render(request, 'przepustki/przepustki_dzis.html', context)
@@ -47,8 +55,10 @@ def wystaw_przepustke(request):
     moja_Data = datetime.now()
     data_dodania = moja_Data.strftime("%Y-%m-%d")
     ile = Przepustka.objects.last()
-    id = ile.id +1
-    print('id: ',id)
+    if ile == None:
+        id = 1
+    else:
+        id = ile.id +1
     rok = datetime.now().strftime("%Y")
 
     zmiana_I_start = 6
@@ -112,17 +122,15 @@ def wystaw_przepustke(request):
         if request.method == 'POST':
 
             subject = 'PRZEPUSTKA nr ' + str(id) + '/' + rok + ' - wystawiona w dniu: ' + data_dodania
-            message = '--------------------------------------------\n'
-            #message +='P R Z E P U S T K A\n'
-            message +=RodzajWpisu.objects.get(id=wpis).rodzaj + '\n'
-            message +='--------------------------------------------\n\n'
+            message = '**    ' + RodzajWpisu.objects.get(id=wpis).rodzaj + '    ************************\n\n'
             message +='Przepustka dla: ' + Pracownik.objects.get(id=pracownik_wpis).nazwisko + ' ' + Pracownik.objects.get(id=pracownik_wpis).imie + '\n'
+            message += '***********************************************************\n\n'
             message +='Wyjście w dniu: ' + data_wyjscie + ' o godzinie: ' + godz_wyjscie + '\n'
             if (godz_przyjscie) == "":
                 message += 'Bez powrotu do końca zmiany\n\n'
             else:
                 message += 'Powrót: ' + data_przyjscie + ' o godzinie: ' + godz_przyjscie + '\n\n'
-            message +='--------------------------------------------\n'
+            message += '***********************************************************\n\n'
             recepient = 'mirek.kolczynski@gmail.com'
             send_mail(subject, message, EMAIL_HOST_USER, [recepient], fail_silently=False)
         return redirect(przepustki_dzis)
@@ -156,11 +164,53 @@ def edytuj_przepustke(request, id):
     rodzaj = RodzajWpisu.objects.filter(aktywny=True).order_by('rodzaj')
     moja_Data = datetime.now()
     data_dodania = moja_Data.strftime("%Y-%m-%d")
+
+    pracownik_wpis = request.POST.get('pracownik')
+    data_wyjscie = request.POST.get('data_wyjscia')
+    godz_wyjscie = request.POST.get('godzina_wyjscia')
+    data_przyjscie = request.POST.get('data_przyjscia')
+    godz_przyjscie = request.POST.get('godzina_przyjscia')
+    rodzaj_wpis = request.POST.get('rodzaj_wpisu')
+
     print('data_dodania:', data_dodania)
     print('data_dodania:', wpisy.instance.data_dodania)
 
+    data_wyjscie_przed = wpis.data_wyjscia
+    godz_wyjscie_przed = wpis.godzina_wyjscia
+    data_przyjscie_przed = wpis.data_przyjscia
+    godz_przyjscie_przed = wpis.godzina_przyjscia
+    print('data_przyjscie_przed ',data_przyjscie_przed)
+    print('godz_przyjscie_przed ',godz_przyjscie_przed)
+    print('data_przyjscie ',data_przyjscie)
+    print('godz_przyjscie ',godz_przyjscie)
+    print('porownaj:',str(godz_przyjscie_przed)=="14:00:00")
+    rok = wpis.data_dodania.strftime("%Y")
+    print('rok ', rok)
+
     if wpisy.is_valid():
         wpisy.save()
+
+        subject = 'PRZEPUSTKA nr ' + str(id) + '/' + rok + ' - wystawiona w dniu: ' + data_dodania + ' - ZMIANA DANYCH!!!'
+        message = '**    ' + RodzajWpisu.objects.get(id=rodzaj_wpis).rodzaj + '    ************************\n\n'
+        message += 'Przepustka dla: ' + Pracownik.objects.get(id=pracownik_wpis).nazwisko + ' ' + Pracownik.objects.get(id=pracownik_wpis).imie + '\n'
+        message += '***********************************************************\n\n'
+        message += 'Treść przed zmianą\n'
+        message += 'Wyjście w dniu: ' + str(data_wyjscie_przed) + ' o godzinie: ' + str(godz_wyjscie_przed) + '\n'
+        if str(godz_przyjscie_przed) == "14:00:00" or str(godz_przyjscie_przed) == "06:00:00" or str(godz_przyjscie_przed) == "22:00:00":
+            message += 'Bez powrotu do końca zmiany\n'
+        else:
+            message += 'Powrót: ' + str(data_przyjscie_przed) + ' o godzinie: ' + str(godz_przyjscie_przed) + '\n'
+        message += '***********************************************************\n\n'
+        message += 'Treść po zmianie\n'
+        message += 'Wyjście w dniu: ' + data_wyjscie + ' o godzinie: ' + godz_wyjscie + '\n'
+        if str(godz_przyjscie) == "14:00" or str(godz_przyjscie) == "06:00" or str(godz_przyjscie) == "22:00":
+            message += 'Bez powrotu do końca zmiany\n'
+        else:
+            message += 'Powrót: ' + data_przyjscie + ' o godzinie: ' + godz_przyjscie + '\n'
+        message += '***********************************************************\n\n'
+        recepient = 'mirek.kolczynski@gmail.com'
+        send_mail(subject, message, EMAIL_HOST_USER, [recepient], fail_silently=False)
+
         return redirect(przepustki_dzis)
 
     context = {
@@ -179,10 +229,35 @@ def usun_przepustke(request, id):
     wpis = get_object_or_404(Przepustka, pk=id)
     wpisy = SkasowacPrzepustka(request.POST or None, request.FILES or None, instance=wpis)
 
+    pracownik_wpis = request.POST.get('pracownik')
+    data_wyjscie_przed = wpis.data_wyjscia
+    godz_wyjscie_przed = wpis.godzina_wyjscia
+    data_przyjscie_przed = wpis.data_przyjscia
+    godz_przyjscie_przed = wpis.godzina_przyjscia
+
+    moja_Data = datetime.now()
+    data_dodania = moja_Data.strftime("%Y-%m-%d")
+    rok = wpis.data_dodania.strftime("%Y")
+    print('rok ', rok)
+
     if wpisy.is_valid():
         kasuj = wpisy.save(commit=False)
         kasuj.cofnieta = 1
         kasuj.save()
+
+        subject = 'PRZEPUSTKA nr ' + str(id) + '/' + rok + ' - WYCOFANA w dniu: ' + data_dodania
+        message = '**    ' + RodzajWpisu.objects.get(id=wpis).rodzaj + '    ************************\n\n'
+        message += 'Przepustka dla: ' + Pracownik.objects.get(id=pracownik_wpis).nazwisko + ' ' + Pracownik.objects.get(id=pracownik_wpis).imie + '\n'
+        message += '***********************************************************\n\n'
+        message += 'Wyjście w dniu: ' + data_wyjscie_przed + ' o godzinie: ' + godz_wyjscie_przed + '\n'
+        if str(godz_przyjscie_przed) == "14:00:00" or str(godz_przyjscie_przed) == "06:00:00" or str(godz_przyjscie_przed) == "22:00:00":
+            message += 'Bez powrotu do końca zmiany\n\n'
+        else:
+            message += 'Powrót: ' + data_przyjscie_przed + ' o godzinie: ' + godz_przyjscie_przed + '\n\n'
+        message += '***********************************************************\n\n'
+        recepient = 'mirek.kolczynski@gmail.com'
+        send_mail(subject, message, EMAIL_HOST_USER, [recepient], fail_silently=False)
+
         return redirect(przepustki_dzis)
 
     context = {
@@ -214,6 +289,7 @@ def przywroc_przepustke(request, id):
 def nowy_pracownik(request):
     form_pracownik = PracownikForm(request.POST or None, request.FILES or None)
     dzial = Dzial.objects.filter(aktywny=True).order_by('dzial')
+    lokalizacja = Lokalizacja.objects.filter(aktywny=True).order_by('lokalizacja')
 
     if form_pracownik.is_valid():
         form_pracownik.save()
@@ -221,7 +297,8 @@ def nowy_pracownik(request):
 
     context = {
         'form_pracownik': form_pracownik,
-        'dzial': dzial
+        'dzial': dzial,
+        'lokalizacja': lokalizacja,
     }
 
     return render(request, 'przepustki/pracownik_form.html', context)
@@ -231,6 +308,7 @@ def nowy_pracownik(request):
 def edytuj_pracownik(request, id):
     wpis = get_object_or_404(Pracownik, pk=id)
     dzial = Dzial.objects.filter(aktywny=True).order_by('dzial')
+    lokalizacja = Lokalizacja.objects.filter(aktywny=True).order_by('lokalizacja')
     form_pracownik = PracownikForm(request.POST or None, request.FILES or None, instance=wpis)
 
     if form_pracownik.is_valid():
@@ -240,7 +318,8 @@ def edytuj_pracownik(request, id):
     context = {
         'form_pracownik': form_pracownik,
         'wpis': wpis,
-        'dzial': dzial
+        'dzial': dzial,
+        'lokalizacja': lokalizacja,
     }
 
     return render(request, 'przepustki/pracownik_form_edycja.html', context)
@@ -294,7 +373,6 @@ def wpisyPracownik(request):
 @login_required
 def nowy_dzial(request):
     form_dzial = DzialForm(request.POST or None, request.FILES or None)
-    lokalizacja = Lokalizacja.objects.filter(aktywny=True).order_by('lokalizacja')
 
     if form_dzial.is_valid():
         form_dzial.save()
@@ -302,7 +380,6 @@ def nowy_dzial(request):
 
     context = {
         'form_dzial': form_dzial,
-        'lokalizacja': lokalizacja
     }
 
     return render(request, 'przepustki/dzial_form.html', context)
@@ -311,7 +388,6 @@ def nowy_dzial(request):
 @login_required
 def edytuj_dzial(request, id):
     wpis = get_object_or_404(Dzial, pk=id)
-    lokalizacja = Lokalizacja.objects.filter(aktywny=True).order_by('lokalizacja')
     form_dzial = DzialForm(request.POST or None, request.FILES or None, instance=wpis)
 
     if form_dzial.is_valid():
@@ -321,7 +397,6 @@ def edytuj_dzial(request, id):
     context = {
         'form_dzial': form_dzial,
         'wpis': wpis,
-        'lokalizacja': lokalizacja
     }
 
     return render(request, 'przepustki/dzial_form_edycja.html', context)
@@ -410,6 +485,9 @@ def is_valid_queryparam(param):
 @login_required
 def filtrowanie(request):
     qs = Przepustka.objects.all()
+    lokalizacja = Lokalizacja.objects.filter(aktywny=True).order_by('lokalizacja')
+    pracownik = Pracownik.objects.filter(zatrudniony=True).order_by('nr_pracownika')
+    dzial = Dzial.objects.filter(aktywny=True).order_by('dzial')
 
     pracownik_contains_query = request.GET.get('pracownik_contains')
     lokalizacja_contains_query = request.GET.get('lokalizacja_contains')
@@ -418,14 +496,17 @@ def filtrowanie(request):
     data_do = request.GET.get('data_do')
     eksport = request.GET.get('eksport')
 
+    lokalizacja_contains_query2 = Lokalizacja.objects.get(id=1)
+    print(pracownik_contains_query)
+
     if is_valid_queryparam(pracownik_contains_query):
-        qs = qs.filter(pracownik__icontains=pracownik_contains_query)
+        qs = qs.filter(pracownik__icontains=Pracownik.objects.get(pk=pracownik_contains_query))
     if is_valid_queryparam(data_od):
         qs = qs.filter(data_wyjscia__gte=data_od)
     if is_valid_queryparam(data_do):
         qs = qs.filter(data_wyjscia__lte=data_do)
     if is_valid_queryparam(lokalizacja_contains_query):
-        qs = qs.filter(pracownik__dzial__lokalizacja__lokalizacja__icontains=lokalizacja_contains_query)
+        qs = qs.filter(pracownik__lokalizacja__lokalizacja__icontains=Lokalizacja.objects.get(id=lokalizacja_contains_query))
     if is_valid_queryparam(dzial_contains_query):
         qs = qs.filter(pracownik__dzial__dzial__icontains=dzial_contains_query)
 
@@ -471,6 +552,9 @@ def filtrowanie(request):
 
     context = {
         'queryset': qs,
+        'lokalizacja': lokalizacja,
+        'pracownik': pracownik,
+        'dzial': dzial,
     }
     return render(request, 'przepustki/eksport.html', context)
 

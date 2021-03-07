@@ -13,8 +13,9 @@
                     <tr>
                         <th class="th-sm" width="5%">#</th>
                         <th class="th-sm" width="5%">Nr pracownika</th>
-                        <th class="th-sm" width="5%">Nazwisko i Imie</th>
-                        <th class="th-sm" width="5%">Dział</th>
+                        <th class="th-sm" width="30%">Nazwisko i Imie</th>
+                        <th class="th-sm" width="20%">Dział</th>
+                        <th class="th-sm" width="20%">Lokalizacja</th>
                         {% if user.is_authenticated %}
                         <th class="th-sm" width="15%">#</th>
                         {% endif %}
@@ -27,6 +28,7 @@
                         <td>{{ wpis.nr_pracownika }}</td>
                         <td>{{ wpis.nazwisko }} {{ wpis.imie }}</td>
                         <td>{{ wpis.dzial }}</td>
+                        <td>{{ wpis.lokalizacja }}</td>
                         {% if user.is_authenticated %}
                         <td>
                             <a href="{% url 'pracownikFormEdycja' wpis.id %}" class="btn btn-outline-primary btn-rounded waves-effect btn-sm mr-2">Edytuj</a>
@@ -42,12 +44,13 @@
                 </tbody>
                 <tfoot class="black white-text">
                     <tr>
-                        <th class="th-sm" width="5%">#</th>
-                        <th class="th-sm" width="5%">Nr pracownika</th>
-                        <th class="th-sm" width="5%">Nazwisko i Imie</th>
-                        <th class="th-sm" width="5%">Dział</th>
+                        <th class="th-sm">#</th>
+                        <th class="th-sm">Nr pracownika</th>
+                        <th class="th-sm">Nazwisko i Imie</th>
+                        <th class="th-sm">Dział</th>
+                        <th class="th-sm">Lokalizacja</th>
                         {% if user.is_authenticated %}
-                        <th class="th-sm" width="15%">#</th>
+                        <th class="th-sm">#</th>
                         {% endif %}
                     </tr>
                 </tfoot>

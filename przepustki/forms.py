@@ -20,9 +20,16 @@ class SkasowacLokalizacja(ModelForm):
 
 #= Dzial =======================================================
 class DzialForm(ModelForm):
+    dzial = forms.CharField(
+        widget=forms.TextInput(
+            attrs={
+                'class': ' form-control'
+            },
+        ), label='>>Dzial<<'
+    )
     class Meta:
         model = Dzial
-        fields = ['dzial','lokalizacja','aktywny']
+        fields = ['dzial','aktywny']
 
 
 class SkasowacDzial(ModelForm):
@@ -37,7 +44,7 @@ class SkasowacDzial(ModelForm):
 class PracownikForm(ModelForm):
     class Meta:
         model = Pracownik
-        fields = ['nr_pracownika','imie','nazwisko','dzial','zatrudniony']
+        fields = ['nr_pracownika','imie','nazwisko','dzial','lokalizacja','zatrudniony']
 
 
 class SkasowacPracownik(ModelForm):

@@ -14,27 +14,44 @@
                     <div class="form-row mb-3">
                         <div class="col md-form">
                             <label class="control-label" for="id_nr_przcownika">Numer pracownika</label>
-                            <input id="id_nr_przcownika" class="form-control" type="search" name="pracownik_contains" placeholder="Numer pracownika..." />
+                            <select name="pracownik_contains" class="mdb-select md-form" id="id_nr_przcownika" searchable="Search here...">
+                                <option value="" disabled selected>Dla kogo przepustka?</option>
+                                {% for result in pracownik %}
+                                <option value="{{ result.id }}">({{ result.nr_pracownika }}) {{ result.nazwisko }} {{ result.imie }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <div class="col md-form">
-                            <label class="control-label" for="id_dzial">Dział</label>
-                            <input id="id_dzial" class="form-control" type="search" name="dzial_contains" placeholder="Dział..." />
+                            <select name="dzial_contains" class="mdb-select md-form" id="id_dzial" searchable="Search here...">
+                                <option value="" disabled selected>Dział...</option>
+                                {% for result in dzial %}
+                                <option value="{{ result.id }}">{{ result.dzial }}</option>
+                                {% endfor %}
+                            </select>
+                            <label class="mdb-main-label" for="id_dzial">Dział</label>
+                        </div>
+                    </div>
+                    <div class="form-row mb-3">
+                        <div class="col md-form input-with-post-icon datepicker">
+                            <label for="id_od">Data od...</label>
+                            <input type="text" placeholder="Data od..." step="1" id="id_od" name="data_od" class=" form-control">
+                            <i class="fas fa-calendar input-prefix" tabindex=0></i>
+                        </div>
+                        <div class="col md-form input-with-post-icon datepicker">
+                            <label for="id_do">Data od...</label>
+                            <input type="text" placeholder="Data do..." step="1" id="id_do" name="data_do" class=" form-control">
+                            <i class="fas fa-calendar input-prefix" tabindex=0></i>
                         </div>
                     </div>
                     <div class="form-row mb-3">
                         <div class="col md-form">
-                            <label class="control-label" for="id_od">Data od</label>
-                            <input type="date" id="id_od" class="form-control" type="search" name="data_od" placeholder="Data od..." />
-                        </div>
-                        <div class="col md-form">
-                            <label class="control-label" for="id_do">Data do</label>
-                            <input type="date" id="id_do" class="form-control" type="search" name="data_do" placeholder="Data do..." />
-                        </div>
-                    </div>
-                    <div class="form-row mb-3">
-                        <div class="col md-form">
-                            <label class="control-label" for="id_lokalizacja">Lokalizacja</label>
-                            <input id="id_lokalizacja" class="form-control" type="search" name="lokalizacja_contains" placeholder="Lokalizacja..." />
+                            <select name="lokalizacja_contains" class="mdb-select md-form" id="id_lokalizacja" searchable="Search here...">
+                                <option value="" disabled selected>Lokalizacja...</option>
+                                {% for result in lokalizacja %}
+                                <option value="{{ result.id }}">{{ result.lokalizacja }}</option>
+                                {% endfor %}
+                            </select>
+                            <label class="mdb-main-label" for="id_lokalizacja">Lokalizacja</label>
                         </div>
                         <div class="col md-form">
 
