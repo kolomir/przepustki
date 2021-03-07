@@ -52,6 +52,7 @@ def wystaw_przepustke(request):
     form_przepustka = PrzepustkaForm(request.POST or None, request.FILES or None)
     pracownik = Pracownik.objects.filter(zatrudniony=True).order_by('nr_pracownika')
     rodzaj = RodzajWpisu.objects.filter(aktywny=True).order_by('rodzaj')
+    lokalizacja = Lokalizacja.objects.filter(aktywny=True).order_by('lokalizacja')
     moja_Data = datetime.now()
     data_dodania = moja_Data.strftime("%Y-%m-%d")
     ile = Przepustka.objects.last()
@@ -121,7 +122,7 @@ def wystaw_przepustke(request):
         form_przepustka.save()
         if request.method == 'POST':
 
-            subject = 'PRZEPUSTKA nr ' + str(id) + '/' + rok + ' - wystawiona w dniu: ' + data_dodania
+            subject = '[' + Lokalizacja.objects.get(id=Pracownik.objects.get(id=pracownik_wpis).lokalizacja_id).lokalizacja + '] PRZEPUSTKA nr ' + str(id) + '/' + rok + ' - wystawiona w dniu: ' + data_dodania
             message = '**    ' + RodzajWpisu.objects.get(id=wpis).rodzaj + '    ************************\n\n'
             message +='Przepustka dla: ' + Pracownik.objects.get(id=pracownik_wpis).nazwisko + ' ' + Pracownik.objects.get(id=pracownik_wpis).imie + '\n'
             message += '***********************************************************\n\n'
@@ -190,7 +191,7 @@ def edytuj_przepustke(request, id):
     if wpisy.is_valid():
         wpisy.save()
 
-        subject = 'PRZEPUSTKA nr ' + str(id) + '/' + rok + ' - wystawiona w dniu: ' + data_dodania + ' - ZMIANA DANYCH!!!'
+        subject = '[' + Pracownik.objects.get(id=pracownik_wpis).lokalizacja + '] PRZEPUSTKA nr ' + str(id) + '/' + rok + ' - wystawiona w dniu: ' + data_dodania + ' - ZMIANA DANYCH!!!'
         message = '**    ' + RodzajWpisu.objects.get(id=rodzaj_wpis).rodzaj + '    ************************\n\n'
         message += 'Przepustka dla: ' + Pracownik.objects.get(id=pracownik_wpis).nazwisko + ' ' + Pracownik.objects.get(id=pracownik_wpis).imie + '\n'
         message += '***********************************************************\n\n'
@@ -245,7 +246,7 @@ def usun_przepustke(request, id):
         kasuj.cofnieta = 1
         kasuj.save()
 
-        subject = 'PRZEPUSTKA nr ' + str(id) + '/' + rok + ' - WYCOFANA w dniu: ' + data_dodania
+        subject = '[' + Pracownik.objects.get(id=pracownik_wpis).lokalizacja + '] PRZEPUSTKA nr ' + str(id) + '/' + rok + ' - WYCOFANA w dniu: ' + data_dodania
         message = '**    ' + RodzajWpisu.objects.get(id=wpis).rodzaj + '    ************************\n\n'
         message += 'Przepustka dla: ' + Pracownik.objects.get(id=pracownik_wpis).nazwisko + ' ' + Pracownik.objects.get(id=pracownik_wpis).imie + '\n'
         message += '***********************************************************\n\n'
