@@ -1,0 +1,40 @@
+{% extends 'przepustki/base.html' %}
+{% block content %}
+{% load static %}
+    <div class="container-fluid">
+        <div class="card col-md-6 my-3 mx-auto text-white green darken-1">
+            <div class="card-body">
+                <h2>Pomoc</h2>
+                <h5>Zmiana hasła</h5>
+            </div>
+        </div>
+        <div class="card col-md-6 my-3 mx-auto">
+            <div class="card-body">
+                <div class="media">
+                    <img class="d-flex mr-3" src="{% static 'img/zmiana_1.jpg' %}" alt="Generic placeholder image" style="width: 400px">
+                    <div class="media-body">
+                        Przechodzimy na nase konto klikając <b>Profil</b> --> <b>Mone konto</b>
+                    </div>
+                </div><br />
+                <div class="media">
+                    <img class="d-flex mr-3" src="{% static 'img/zmiana_2.jpg' %}" alt="Generic placeholder image" style="width: 400px">
+                    <div class="media-body">
+                        Następnie klikamy na <b>Zmina Hasła</b> w prawym górnym rogu strony
+                    </div>
+                </div><br />
+                <div class="media">
+                    <img class="d-flex mr-3" src="{% static 'img/zmiana_3.jpg' %}" alt="Generic placeholder image" style="width: 400px">
+                    <div class="media-body">
+                        Wypełniamy formularz zwracając uwagę na wymogi nowego hasła. Po wypełnieniu potwierdzamy operację klikając na przycisk <b>Zmień hasło</b>
+                    </div>
+                </div><br />
+                <div class="media">
+                    <img class="d-flex mr-3" src="{% static 'img/zmiana_4.jpg' %}" alt="Generic placeholder image" style="width: 400px">
+                    <div class="media-body">
+                        Powrót na stronę główną Przepustek klikając w prawym górnym rogu <b>Pokaż stronę</b>
+                    </div>
+                </div>
+            </div>
+        </div>
+   </div>
+{% endblock content %}

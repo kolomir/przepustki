@@ -30,18 +30,19 @@ def przepustki_dzis(request):
     przepustki_suma = Przepustka.objects.all().values('pracownik__lokalizacja__lokalizacja').annotate(licz=Count('pracownik__lokalizacja__lokalizacja'))
     print(przepustki_suma)
     czas_teraz = datetime.now()
-    czas = czas_teraz.strftime("%H:%M")
-    print(czas)
-    for czasy in przepustki_dzis:
-        if str(czasy.godzina_przyjscia) > czas:
-            print(czasy.godzina_przyjscia)
+    #czas = czas_teraz.strftime("%H:%M").time()
+    #czas = datetime.strptime(czas, '%H:%M').time()
+    #print(czas_teraz)
+    #for czasy in przepustki_dzis:
+    #    if str(czasy.godzina_przyjscia) > czas_teraz:
+    #        print(czasy.godzina_przyjscia)
 
     context = {
         'przepustki_dzis': przepustki_dzis,
         'przepustki_wczoraj': przepustki_wczoraj,
         'przepustki_przyszle': przepustki_przyszle,
         'przepustki_suma': przepustki_suma,
-        'czas': str(czas),
+        'czas': czas_teraz,
     }
 
     return render(request, 'przepustki/przepustki_dzis.html', context)
@@ -140,7 +141,7 @@ def wystaw_przepustke(request):
         'form_przepustka': form_przepustka,
         'pracownik': pracownik,
         'rodzaj':rodzaj,
-        'data_dodania': data_dodania
+        'data_dodania': data_dodania,
     }
 
     return render(request, 'przepustki/wystaw_przepustke_form.html', context)
@@ -641,15 +642,23 @@ def upload_file_view(request):
                     row = row.split()
                     # - PRACOWNICY ------------------------------
                     r_dzial = Dzial.objects.get(id=row[3])
+                    r_lokalizacja = Lokalizacja.objects.get(id=row[4])
 
                     Pracownik.objects.create(
                         nr_pracownika=int(row[0]),
                         imie=row[2],
                         nazwisko=row[1],
-                        dzial=r_dzial,
+                        dzial_id=int(row[3]),
                         zatrudniony=1,
+                        lokalizacja_id=int(row[4]),
                     )
-                    print(r_dzial)
+                    #nr_pracownika = int(row[0])
+                    #imie=row[2]
+                    #nazwisko=row[1]
+                    #dzial=row[3]
+                    #zatrudniony=1
+                    #lokalizacja=row[4]
+                    #print('nr:',nr_pracownika,'; imie:',imie,'; nazwisko:',nazwisko,'; dzial:',dzial,'; zatru:',zatrudniony,'; lokalizacja:',lokalizacja)
                     # - KONIEC PRACOWNICY ------------------------------
                     # =================================================
                     # - KLIENCI ------------------------------
@@ -681,3 +690,7 @@ def upload_file_view(request):
     }
     return render(request, 'przepustki/form_upload.html', context)
 
+
+def pomoc(request):
+    context = {}
+    return render(request, 'przepustki/pomoc.html', context)
