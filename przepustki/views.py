@@ -691,6 +691,11 @@ def upload_file_view(request):
     return render(request, 'przepustki/form_upload.html', context)
 
 
-def pomoc(request):
+def pomoc_haslo(request):
     context = {}
-    return render(request, 'przepustki/pomoc.html', context)
+    return render(request, 'przepustki/pomoc_haslo.html', context)
+
+
+def pomoc_o_programie(request):
+    context = {}
+    return render(request, 'przepustki/pomoc_o_programie.html', context)

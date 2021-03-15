@@ -29,11 +29,14 @@
                             <a class="dropdown-item" href="/dzial_form">Nowy Dział</a>
                         </div>
                     </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="/pomoc">Przepustka<span class="sr-only"></span></a>
-                    </li
-                    >{% endif %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLinkPomoc" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Pomoc</a>
+                        <div class="dropdown-menu  dropdown-success" aria-labelledby="navbarDropdownMenuLink">
+                            <a class="dropdown-item" href="/pomoc_o_programie">O programie</a>
+                            <a class="dropdown-item" href="/pomoc_haslo">Zmiana hasła</a>
+                        </div>
+                    </li>
+                    {% endif %}
                 </ul>
 
                 <ul class="navbar-nav ml-1 nav-flex-icons">

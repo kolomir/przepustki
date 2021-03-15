@@ -1,0 +1,44 @@
+{% extends 'przepustki/base.html' %}
+{% block content %}
+{% load static %}
+    <div class="container-fluid">
+        <div class="card col-md-6 my-3 mx-auto text-white green darken-1">
+            <div class="card-body">
+                <h2>Pomoc</h2>
+                <h5>O programie</h5>
+            </div>
+        </div>
+        <div class="card col-md-6 my-3 mx-auto">
+            <div class="card-body">
+                <article class="article z-depth-1 p-3">
+                    <h2 class="article__title">Ogólne dane</h2>
+                    <div class="article__content">
+                        Program służy do wystawiania drogą elektroniczną przepustek dla pracowników.<br />
+                        Mowa jest zarówno o wyjściach prywatnych jak i służbowych. Możliwe jest również odnotowywanie czasu nadliczbowego służącego do odrobienia przepustek prywatnych.
+                    </div>
+                </article><br />
+                <article class="article z-depth-1 p-3">
+                    <h2 class="article__title">Podstawowe możliwości programu</h2>
+                    <div class="article__content">
+                        <ul>
+                            <li>Wystawianie przepustek na wcześniejsze wyjście lub odpracowanie wcześniej wziętych przepustek</li>
+                            <li>Automatyczne wysyłanie wiadomości email do strażników po wystawieniu, edycji czy usunięciu przepustki</li>
+                            <li>Edycja danych bieżących, np. kontrola powrotów pracowników z przepustki</li>
+                            <li>Zablokowanie edycji archiwalnych przepustek</li>
+                            <li>Wystawianie przepustek z wyprzedzeniem, nie koniecznie w dniu wyjścia</li>
+                            <li>Ujednolicenie danych do późniejszej obróbki</li>
+                            <li>Eksport danych w formacie tekstowym .csv</li>
+                        </ul>
+                    </div>
+                </article><br />
+                <article class="article z-depth-1 p-3">
+                    <h2 class="article__title">Uwaga!!!</h2>
+                    <div class="article__content">
+                        Program jest jeszcze w wersji rozwojowej. Mogą podczas jego działania pojawić się błędy. Bardzo proszę o informacje o wszelkich utrudnieniach tak by możliwe było szybkie ich usunięcie.<br />
+
+                    </div>
+                </article>
+            </div>
+        </div>
+   </div>
+{% endblock content %}

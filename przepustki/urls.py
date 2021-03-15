@@ -2,7 +2,7 @@ from django.urls import path
 from .views import przepustki_dzis,wystaw_przepustke,edytuj_przepustke, usun_przepustke, przywroc_przepustke, \
                    nowy_pracownik, edytuj_pracownik, usun_pracownik, przywroc_pracownik, wpisyPracownik, \
                    nowy_dzial, wpisyDzial, edytuj_dzial, usun_dzial, przywroc_dzial, login_request, logout_request, \
-                   zestawienie, filtrowanie, upload_file_view, pomoc
+                   zestawienie, filtrowanie, upload_file_view, pomoc_haslo, pomoc_o_programie
 
 
 urlpatterns = [
@@ -38,5 +38,6 @@ urlpatterns = [
     path('eksport/', filtrowanie, name='filtrowanie'),
     path('upload/', upload_file_view, name='upload'),
     path('zestawienie/', zestawienie, name='zestawienie'),
-    path('pomoc/', pomoc, name='pomoc'),
+    path('pomoc_haslo/', pomoc_haslo, name='pomoc_haslo'),
+    path('pomoc_o_programie/', pomoc_o_programie, name='pomoc_o_programie'),
 ]
