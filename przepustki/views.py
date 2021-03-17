@@ -114,11 +114,13 @@ def wystaw_przepustke(request):
 
 
     if form_przepustka.is_valid():
+        czas = '00:00'
         autor = get_author(request.user)
         if godz_przyjscie == "":
             form_przepustka.instance.data_przyjscia = data_przyjscie
             form_przepustka.instance.godzina_przyjscia = godzina_przyjscie
         form_przepustka.instance.autor_wpisu = autor
+        form_przepustka.instance.czas = czas
         form_przepustka.instance.data_dodania = request.POST.get('data_dodania')
         form_przepustka.save()
         if request.method == 'POST':
@@ -192,7 +194,7 @@ def edytuj_przepustke(request, id):
     if wpisy.is_valid():
         wpisy.save()
 
-        subject = '[' + Pracownik.objects.get(id=pracownik_wpis).lokalizacja + '] PRZEPUSTKA nr ' + str(id) + '/' + rok + ' - wystawiona w dniu: ' + data_dodania + ' - ZMIANA DANYCH!!!'
+        subject = '[' + Lokalizacja.objects.get(id=Pracownik.objects.get(id=pracownik_wpis).lokalizacja_id).lokalizacja + '] PRZEPUSTKA nr ' + str(id) + '/' + rok + ' - wystawiona w dniu: ' + data_dodania + ' - ZMIANA DANYCH!!!'
         message = '**    ' + RodzajWpisu.objects.get(id=rodzaj_wpis).rodzaj + '    ************************\n\n'
         message += 'Przepustka dla: ' + Pracownik.objects.get(id=pracownik_wpis).nazwisko + ' ' + Pracownik.objects.get(id=pracownik_wpis).imie + '\n'
         message += '***********************************************************\n\n'
@@ -231,7 +233,6 @@ def usun_przepustke(request, id):
     wpis = get_object_or_404(Przepustka, pk=id)
     wpisy = SkasowacPrzepustka(request.POST or None, request.FILES or None, instance=wpis)
 
-    pracownik_wpis = request.POST.get('pracownik')
     data_wyjscie_przed = wpis.data_wyjscia
     godz_wyjscie_przed = wpis.godzina_wyjscia
     data_przyjscie_przed = wpis.data_przyjscia
@@ -240,22 +241,21 @@ def usun_przepustke(request, id):
     moja_Data = datetime.now()
     data_dodania = moja_Data.strftime("%Y-%m-%d")
     rok = wpis.data_dodania.strftime("%Y")
-    print('rok ', rok)
 
     if wpisy.is_valid():
         kasuj = wpisy.save(commit=False)
         kasuj.cofnieta = 1
         kasuj.save()
 
-        subject = '[' + Pracownik.objects.get(id=pracownik_wpis).lokalizacja + '] PRZEPUSTKA nr ' + str(id) + '/' + rok + ' - WYCOFANA w dniu: ' + data_dodania
-        message = '**    ' + RodzajWpisu.objects.get(id=wpis).rodzaj + '    ************************\n\n'
-        message += 'Przepustka dla: ' + Pracownik.objects.get(id=pracownik_wpis).nazwisko + ' ' + Pracownik.objects.get(id=pracownik_wpis).imie + '\n'
+        subject = '[' + Lokalizacja.objects.get(id=Pracownik.objects.get(id=wpis.pracownik_id).lokalizacja_id).lokalizacja + '] PRZEPUSTKA nr ' + str(id) + '/' + rok + ' - WYCOFANA w dniu: ' + data_dodania
+        message = '**    ' + RodzajWpisu.objects.get(id=wpis.rodzaj_wpisu_id).rodzaj + '    ************************\n\n'
+        message += 'Przepustka dla: ' + Pracownik.objects.get(id=wpis.pracownik_id).nazwisko + ' ' + Pracownik.objects.get(id=wpis.pracownik_id).imie + '\n'
         message += '***********************************************************\n\n'
-        message += 'Wyjście w dniu: ' + data_wyjscie_przed + ' o godzinie: ' + godz_wyjscie_przed + '\n'
+        message += 'Wyjście w dniu: ' + str(data_wyjscie_przed) + ' o godzinie: ' + str(godz_wyjscie_przed) + '\n'
         if str(godz_przyjscie_przed) == "14:00:00" or str(godz_przyjscie_przed) == "06:00:00" or str(godz_przyjscie_przed) == "22:00:00":
             message += 'Bez powrotu do końca zmiany\n\n'
         else:
-            message += 'Powrót: ' + data_przyjscie_przed + ' o godzinie: ' + godz_przyjscie_przed + '\n\n'
+            message += 'Powrót: ' + str(data_przyjscie_przed) + ' o godzinie: ' + str(godz_przyjscie_przed) + '\n\n'
         message += '***********************************************************\n\n'
         recepient = 'mirek.kolczynski@gmail.com'
         send_mail(subject, message, EMAIL_HOST_USER, [recepient], fail_silently=False)
@@ -565,23 +565,29 @@ def filtrowanie(request):
 def zestawienie(request):
     #pracownik = Pracownik.objects.all()
     qs = Przepustka.objects.all()
+    pracownik = Pracownik.objects.filter(zatrudniony=True).order_by('nr_pracownika')
 
     data_od = request.GET.get('data_od')
     data_do = request.GET.get('data_do')
     eksport = request.GET.get('eksport')
     print('data_od:', data_od)
     print('data_do:', data_do)
-
-    przepustki_suma = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('pracownik__imie').annotate(licz=Sum('autor_wpisu_id'))
+    if data_od == None:
+        data_od = '1900-01-01'
+        data_do = '1900-02-01'
+    przepustki_suma = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('pracownik__nazwisko').annotate(licz=Sum('autor_wpisu_id'))
     print('pracownik__imie')
-    print(przepustki_suma.pracownik__imie)
+    #print(przepustki_suma.pracownik__imie)
 
     print("=================")
     #for obj in przepustki_suma:
         #print(obj.pracownik__imie['imie'])
 
     print(przepustki_suma)
+    for obj in przepustki_suma:
+        print(obj['pracownik__nazwisko'], ' ', obj['licz'])
 
+    '''
     if is_valid_queryparam(data_od):
         qs = qs.filter(data_wyjscia__gte=data_od)
     if is_valid_queryparam(data_do):
@@ -597,7 +603,7 @@ def zestawienie(request):
             #print(obj.pracownik_id + ' - ' + Sum)
         print('jestem')
 
-    '''    
+ 
     qs = Przepustka.objects.all()
 
     data_od = request.GET.get('data_od')
@@ -699,3 +705,8 @@ def pomoc_haslo(request):
 def pomoc_o_programie(request):
     context = {}
     return render(request, 'przepustki/pomoc_o_programie.html', context)
+
+
+def pomoc_przepustka(request):
+    context = {}
+    return render(request, 'przepustki/pomoc_przepustka.html', context)

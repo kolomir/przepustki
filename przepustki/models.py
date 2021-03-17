@@ -38,7 +38,13 @@ class Autor(models.Model):
 
 
 class RodzajWpisu(models.Model):
+    RODZAJE = {
+        (0, 'Nie zmienia czasu'),
+        (1, 'Odejmuje czas'),
+        (2, 'Dodaje czas')
+    }
     rodzaj = models.CharField(max_length=60, unique=True)
+    czas = models.IntegerField(default=0,choices=RODZAJE)
     aktywny = models.BooleanField(default=True)
 
     def __str__(self):
@@ -56,6 +62,7 @@ class Przepustka(models.Model):
     autor_wpisu = models.ForeignKey(Autor, on_delete=models.CASCADE)
     data_dodania = models.DateField('data dodania', blank=True, null=True)
     cofnieta = models.BooleanField(default=False)
+    czas = models.TimeField('czas trwania')
 
     def przepustki(self):
         return str(self.pracownik) + "(" +str(self.data_wyjscia) + ")"

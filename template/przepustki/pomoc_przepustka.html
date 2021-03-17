@@ -1,0 +1,61 @@
+{% extends 'przepustki/base.html' %}
+{% block content %}
+{% load static %}
+    <div class="container-fluid">
+        <div class="card col-md-6 my-3 mx-auto text-white green darken-1">
+            <div class="card-body">
+                <h2>Pomoc</h2>
+                <h5>Przepustka</h5>
+            </div>
+        </div>
+        <div class="card col-md-6 my-3 mx-auto">
+            <div class="card-body">
+                <div class="media">
+                    <img class="d-flex mr-3 img-fluid z-depth-1" src="{% static 'img/przepustka_1.jpg' %}" alt="Generic placeholder image" style="width: 400px">
+                    <div class="media-body">
+                        Aby wypisać nową przepustkę Oczywiście należy być zalogowanym. Następnie z menu wybieramy <b>Przepustka</b>
+                    </div>
+                </div><br />
+                <div class="media">
+                    <img class="d-flex mr-3 img-fluid z-depth-1" src="{% static 'img/przepustka_2.jpg' %}" alt="Generic placeholder image" style="width: 400px">
+                    <div class="media-body">
+                        Wypełniamy formularz zgodnie z poszczególnymi polami. <br /> Wymagane są pola wszystkie poza <b>Data do...</b> i <b>Godzina do...</b>.<br />
+                        Pozostawienie pustych pól z datą i godziną powrotu spowoduje że nieobecność naliczona będzie do końca obecnej zmiany.<br /><br />
+                        Wymagane jest zachowanie jednego formatu daty <b>"YYYY-MM-DD"</b> oraz godziny <b>"00:00"</b>.
+                    </div>
+                </div><br />
+                <div class="media">
+                    <img class="d-flex mr-3 img-fluid z-depth-1" src="{% static 'img/przepustka_3.jpg' %}" alt="Generic placeholder image" style="width: 400px">
+                    <div class="media-body">
+                        Datę i godzinę można wpisać ręcznie zachowując odpowiedni format...
+                    </div>
+                </div><br />
+                <div class="media">
+                    <img class="d-flex mr-3 img-fluid z-depth-1" src="{% static 'img/przepustka_4.jpg' %}" alt="Generic placeholder image" style="width: 400px">
+                    <div class="media-body">
+                        ...lub kliknąć odpowiednią ikonę pokazaną powyżej by wybrać datę i godzinę.
+                    </div>
+                </div><br />
+                <div class="media">
+                    <img class="d-flex mr-3 img-fluid z-depth-1" src="{% static 'img/przepustka_5.jpg' %}" alt="Generic placeholder image" style="width: 400px">
+                    <div class="media-body">
+                        Po wypełnieniu całości klikamy przycisk <b>Zapisz</b> po czym zostaniemy przeniesieni na stronę główną oraz wysłany zostanie do ochrony e-mail z informacją o przepustce.
+                    </div>
+                </div><br />
+                <div class="media">
+
+                    <div class="media-body">
+                        <b>Kilka uwag dotyczących wypełniania</b><br />
+                        <ul>
+                            <li>Daty i godziny wyjść i powrotów nie współdziałają ze sobą. Przed zapisem sprawdź czy nie poprawność zapisu (aby np. godzina wyjścia nie była późniejsza niż godzina powrotu)</li>
+                            <li>Wypisując przepustkę na nocnej zmianie pomiętaj że po północy zmienia się data zarówno wyjścia jak i powrotu.</li>
+                            <li>Data powrotu na nocnej zmianie zostanie dopasowana automatycznie (po północy nastąpi zmian daty) jeśli pozostawimy datę i godzinę powrotu pustą.</li>
+                            <li>Można edytować wpisy ale tylko z dnia bieżącego lub przyszłe. Przepustki wykożystane są nieedytowalne. Oznacza to również że ewentualna korekta powrotu z przepustki powinna byc wykonana na bieżąco.</li>
+                            <li>Dokładnie tak samo jak wypisuje się przepustki można wypisywać odpracowywanie czasu z przepustek wybierając tylko inny <b>Rodzaj wpisu</b> w formularzu. Znacznie ułatwi to późniejsze rozliczenie pracowników.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+   </div>
+{% endblock content %}
