@@ -20,6 +20,12 @@ def get_author(user):
     return None
 
 
+def przerobienie_daty(data,godzina):
+   (rok1, miesiac1, dzien1) = data.split("-")
+   (godzina1, minuta1) = godzina.split(":")
+   return datetime(int(rok1),int(miesiac1),int(dzien1),int(godzina1),int(minuta1))
+
+
 # == PRZEPUSTKI ===============================================================================
 def przepustki_dzis(request):
 
@@ -63,6 +69,7 @@ def wystaw_przepustke(request):
         id = ile.id +1
     rok = datetime.now().strftime("%Y")
 
+    liczy = 0
     zmiana_I_start = 6
     zmiana_II_start = 14
     zmiana_III_start = 22
@@ -78,23 +85,50 @@ def wystaw_przepustke(request):
     print("--> data_dodania: ", data_dodania)
     print("--> dat_dod: ", dat_dod)
 
+    if data_wyjscie:
+        print("data_wyjscie: ", data_wyjscie)
+        przerobiona_data_wyjscia = przerobienie_daty(data_wyjscie, godz_wyjscie)
+
 
     if godz_przyjscie == "":
         godzina_wyjscia = "%s%s" % (godz_wyjscie[0], godz_wyjscie[1])
         if int(godzina_wyjscia) >= zmiana_I_start and int(godzina_wyjscia) < zmiana_II_start:
             data_przyjscie = data_wyjscie
             godzina_przyjscie = '14:00'
+            print("data_przyjscie: ", data_przyjscie)
+            przerobiona_data_przyjscia = przerobienie_daty(data_przyjscie, godzina_przyjscie)
+            liczy = 1
         elif int(godzina_wyjscia) >= zmiana_II_start and int(godzina_wyjscia) < zmiana_III_start:
             data_przyjscie = data_wyjscie
             godzina_przyjscie = '22:00'
+            print("data_przyjscie: ", data_przyjscie)
+            przerobiona_data_przyjscia = przerobienie_daty(data_przyjscie, godzina_przyjscie)
+            liczy = 1
         elif (int(godzina_wyjscia) >= zmiana_III_start and int(godzina_wyjscia) <= 23) or (
                 int(godzina_wyjscia) >= 0 and int(godzina_wyjscia) < zmiana_I_start):
             data_przyjscie = datetime.strptime(data_wyjscie, '%Y-%m-%d').date() + timedelta(days=1)
             godzina_przyjscie = '06:00'
+            print("data_przyjscie: ", data_przyjscie)
+            przerobiona_data_przyjscia = przerobienie_daty(str(data_przyjscie), godzina_przyjscie)
+            liczy = 1
         else:
             print("Godzina poza zakresem")
     else:
+        godzina_przyjscie = godz_przyjscie
         print("godzina powrotu: ", godz_przyjscie)
+        print("data_przyjscie: ", data_przyjscie)
+        if data_przyjscie:
+            przerobiona_data_przyjscia = przerobienie_daty(data_przyjscie, godzina_przyjscie)
+            liczy = 1
+
+    if liczy:
+        print('przerobiona_data_wyjscia:', przerobiona_data_wyjscia)
+        print('przerobiona_data_przyjscia', przerobiona_data_przyjscia)
+
+        czas_r = przerobiona_data_przyjscia - przerobiona_data_wyjscia
+        print('czas_r:', czas_r)
+        print('nr1 minęło dni: %s, godzin: %d, minut: %d' % (
+        czas_r.days, czas_r.seconds / 3600, (czas_r.seconds % 3600) / 60))
 
     #===================================================================
     #print('data_dodania: ', data_dodania)
@@ -114,7 +148,8 @@ def wystaw_przepustke(request):
 
 
     if form_przepustka.is_valid():
-        czas = '00:00'
+        #czas = '00:00'
+        czas = str(czas_r)
         autor = get_author(request.user)
         if godz_przyjscie == "":
             form_przepustka.instance.data_przyjscia = data_przyjscie
@@ -168,6 +203,7 @@ def edytuj_przepustke(request, id):
     rodzaj = RodzajWpisu.objects.filter(aktywny=True).order_by('rodzaj')
     moja_Data = datetime.now()
     data_dodania = moja_Data.strftime("%Y-%m-%d")
+    licz = 0
 
     pracownik_wpis = request.POST.get('pracownik')
     data_wyjscie = request.POST.get('data_wyjscia')
@@ -191,8 +227,21 @@ def edytuj_przepustke(request, id):
     rok = wpis.data_dodania.strftime("%Y")
     print('rok ', rok)
 
+    if data_przyjscie:
+        przerobiona_data_wyjscia = przerobienie_daty(str(data_wyjscie), str(godz_wyjscie))
+        przerobiona_data_przyjscia = przerobienie_daty(str(data_przyjscie), str(godz_przyjscie))
+        czas_r = przerobiona_data_przyjscia - przerobiona_data_wyjscia
+
+        print('czas_r:', czas_r)
+        print('nr1 minęło dni: %s, godzin: %d, minut: %d' % (
+        czas_r.days, czas_r.seconds / 3600, (czas_r.seconds % 3600) / 60))
+        licz = 1
+
     if wpisy.is_valid():
-        wpisy.save()
+        if licz:
+            czas = str(czas_r)
+            wpisy.instance.czas = czas
+            wpisy.save()
 
         subject = '[' + Lokalizacja.objects.get(id=Pracownik.objects.get(id=pracownik_wpis).lokalizacja_id).lokalizacja + '] PRZEPUSTKA nr ' + str(id) + '/' + rok + ' - wystawiona w dniu: ' + data_dodania + ' - ZMIANA DANYCH!!!'
         message = '**    ' + RodzajWpisu.objects.get(id=rodzaj_wpis).rodzaj + '    ************************\n\n'
@@ -499,10 +548,10 @@ def filtrowanie(request):
     eksport = request.GET.get('eksport')
 
     lokalizacja_contains_query2 = Lokalizacja.objects.get(id=1)
-    print(pracownik_contains_query)
+    print('pracownik_contains_query:',pracownik_contains_query)
 
     if is_valid_queryparam(pracownik_contains_query):
-        qs = qs.filter(pracownik__icontains=Pracownik.objects.get(pk=pracownik_contains_query))
+        qs = qs.filter(pracownik__icontains=Pracownik.objects.get(id=str(pracownik_contains_query)))
     if is_valid_queryparam(data_od):
         qs = qs.filter(data_wyjscia__gte=data_od)
     if is_valid_queryparam(data_do):
@@ -510,7 +559,7 @@ def filtrowanie(request):
     if is_valid_queryparam(lokalizacja_contains_query):
         qs = qs.filter(pracownik__lokalizacja__lokalizacja__icontains=Lokalizacja.objects.get(id=lokalizacja_contains_query))
     if is_valid_queryparam(dzial_contains_query):
-        qs = qs.filter(pracownik__dzial__dzial__icontains=dzial_contains_query)
+        qs = qs.filter(pracownik__dzial__dzial__icontains=Dzial.objects.get(id=dzial_contains_query))
 
     if eksport == 'on':
 
@@ -538,7 +587,7 @@ def filtrowanie(request):
             dla_pracownika = "{} {}".format(obj.pracownik.nazwisko, obj.pracownik.imie)
             writer.writerow(
                 [
-                    obj.pracownik,
+                    obj.pracownik.nr_pracownika,
                     dla_pracownika,
                     obj.data_wyjscia,
                     obj.godzina_wyjscia,
@@ -575,13 +624,16 @@ def zestawienie(request):
     if data_od == None:
         data_od = '1900-01-01'
         data_do = '1900-02-01'
-    przepustki_suma = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('pracownik__nazwisko').annotate(licz=Sum('autor_wpisu_id'))
+    przepustki_suma = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('pracownik__nazwisko').annotate(licz=Count('czas'))
+    czas_licz = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('pracownik__nazwisko').annotate(licz_czas=Count('czas'))
     print('pracownik__imie')
     #print(przepustki_suma.pracownik__imie)
 
     print("=================")
     #for obj in przepustki_suma:
         #print(obj.pracownik__imie['imie'])
+
+    print('czas_licz:',czas_licz)
 
     print(przepustki_suma)
     for obj in przepustki_suma:
