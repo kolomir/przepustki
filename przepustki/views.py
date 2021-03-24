@@ -551,7 +551,7 @@ def filtrowanie(request):
     print('pracownik_contains_query:',pracownik_contains_query)
 
     if is_valid_queryparam(pracownik_contains_query):
-        qs = qs.filter(pracownik__icontains=Pracownik.objects.get(id=str(pracownik_contains_query)))
+        qs = qs.filter(pracownik__exact=Pracownik.objects.get(id=int(pracownik_contains_query)))
     if is_valid_queryparam(data_od):
         qs = qs.filter(data_wyjscia__gte=data_od)
     if is_valid_queryparam(data_do):
