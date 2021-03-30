@@ -1,0 +1,60 @@
+{% extends 'przepustki/base.html' %}
+{% block content %}
+{% load static %}
+    <div class="container-fluid">
+        <div class="card col-md-6 my-3 mx-auto text-white green darken-1">
+            <div class="card-body">
+                <h2>Pomoc</h2>
+                <h5>Pracownik</h5>
+            </div>
+        </div>
+        <div class="card col-md-6 my-3 mx-auto">
+            <div class="card-body">
+                <div class="media">
+
+                    <div class="media-body">
+                        Bywa tak że podczas próby wypisywania nowej przepustki okazuje się, że nie ma w bazie pracownika, osoby dla której wystawiamy przepustkę.<br />
+                        Oczywiście takie sytuacje to normalność. Podczas startu programu baza uzupełniona była kilkaset nazwiskami ale mamy nowych pracowników których każdy z nas w miarę potrzeb może dodać do bazy samodzielnie. <br /><br />
+                        Poniżej prosty opis krok po kroku jak to zrobić:<br /><br />
+                    </div>
+                </div>
+                <div class="media">
+                    <img class="d-flex mr-3 img-fluid z-depth-1" src="{% static 'img/pracownik_1.jpg' %}" alt="Generic placeholder image" style="width: 400px">
+                    <div class="media-body">
+                        Aby dodać nowego pracownika do bazy z górnego menu wybieramy <b>Dodaj -> Nowy Pracownik</b>
+                    </div>
+                </div><br />
+                <div class="media">
+                    <img class="d-flex mr-3 img-fluid z-depth-1" src="{% static 'img/pracownik_2.jpg' %}" alt="Generic placeholder image" style="width: 400px">
+                    <div class="media-body">
+                        Przejdziemy do formularza, który należy wypełnić zgodnie z opisami pól. <br />
+                        <ul>
+                            <li><b>Nr pracownika</b> - jest to numer osobowy z systemu Monitor</li>
+                            <li><b>Dział</b> - Lista działów w firmie bez podziału na lokalizacje</li>
+                            <li><b>Lokalizacja</b> - Lokalizacja, w której pracuje pracownik. Ta informacja przydaje się również ochronie by identyfikować której lokalizacji dotyczy przepustka</li>
+                        </ul>
+                        Wszystkie pola formularza powinny być wypełnione.
+                    </div>
+                </div><br />
+                <div class="media">
+                    <img class="d-flex mr-3 img-fluid z-depth-1" src="{% static 'img/pracownik_3.jpg' %}" alt="Generic placeholder image" style="width: 400px">
+                    <div class="media-body">
+                        Pozostaje tylko zapisać formularz.
+                    </div>
+                </div><br />
+                <div class="media">
+                    <img class="d-flex mr-3 img-fluid z-depth-1" src="{% static 'img/pracownik_4.jpg' %}" alt="Generic placeholder image" style="width: 400px">
+                    <div class="media-body">
+                        Po zapisie automatycznie przeniesieni jesteśmy na listę pracowników. <br />
+                        Możesz wyszukać nowododaną osobę wpisując nazwisko lub numer w polu <b>Search</b>
+                    </div>
+                </div><br />
+                <div class="media">
+                    <div class="media-body">
+                        Możemy również przejść do formularza i wypisać teraz przepustkę dla właśnie dodanej osoby.
+                    </div>
+                </div><br />
+            </div>
+        </div>
+   </div>
+{% endblock content %}

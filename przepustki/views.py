@@ -8,8 +8,8 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from django.http import HttpResponse
 import csv
-from django.db.models import Count, Sum
-from projekt.settings import EMAIL_HOST_USER
+from django.db.models import Count, Sum, F
+from projekt.settings import EMAIL_HOST_USER, EMAIL_RECIVE_USER
 from django.core.mail import send_mail
 
 # == INNE =====================================================================================
@@ -104,9 +104,14 @@ def wystaw_przepustke(request):
             print("data_przyjscie: ", data_przyjscie)
             przerobiona_data_przyjscia = przerobienie_daty(data_przyjscie, godzina_przyjscie)
             liczy = 1
-        elif (int(godzina_wyjscia) >= zmiana_III_start and int(godzina_wyjscia) <= 23) or (
-                int(godzina_wyjscia) >= 0 and int(godzina_wyjscia) < zmiana_I_start):
+        elif (int(godzina_wyjscia) >= zmiana_III_start and int(godzina_wyjscia) <= 23):
             data_przyjscie = datetime.strptime(data_wyjscie, '%Y-%m-%d').date() + timedelta(days=1)
+            godzina_przyjscie = '06:00'
+            print("data_przyjscie: ", data_przyjscie)
+            przerobiona_data_przyjscia = przerobienie_daty(str(data_przyjscie), godzina_przyjscie)
+            liczy = 1
+        elif (int(godzina_wyjscia) >= 0 and int(godzina_wyjscia) < zmiana_I_start):
+            data_przyjscie = data_wyjscie
             godzina_przyjscie = '06:00'
             print("data_przyjscie: ", data_przyjscie)
             przerobiona_data_przyjscia = przerobienie_daty(str(data_przyjscie), godzina_przyjscie)
@@ -150,6 +155,8 @@ def wystaw_przepustke(request):
     if form_przepustka.is_valid():
         #czas = '00:00'
         czas = str(czas_r)
+        czas = '0'+czas
+        print(czas)
         autor = get_author(request.user)
         if godz_przyjscie == "":
             form_przepustka.instance.data_przyjscia = data_przyjscie
@@ -170,7 +177,7 @@ def wystaw_przepustke(request):
             else:
                 message += 'Powrót: ' + data_przyjscie + ' o godzinie: ' + godz_przyjscie + '\n\n'
             message += '***********************************************************\n\n'
-            recepient = 'mirek.kolczynski@gmail.com'
+            recepient = EMAIL_RECIVE_USER
             send_mail(subject, message, EMAIL_HOST_USER, [recepient], fail_silently=False)
         return redirect(przepustki_dzis)
 
@@ -575,8 +582,8 @@ def filtrowanie(request):
                 'data_wyjscia',
                 'godzina_wyjscia',
                 'data_przyjscia',
-                'czas',
                 'godzina_przyjscia',
+                'czas',
                 'rodzaj_wpisu',
                 'autor_wpisu',
                 'data_dodania',
@@ -627,17 +634,37 @@ def zestawienie(request):
         data_od = '1900-01-01'
         data_do = '1900-02-01'
     przepustki_suma = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('pracownik__nazwisko').annotate(licz=Count('czas'))
-    czas_licz = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('pracownik__nazwisko').annotate(licz_czas=Count('czas'))
+    czas_licznik = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('pracownik__nazwisko').annotate(czas_licz=Sum(F('czas')))
+    czas_licznik_2 = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('czas').annotate(Count("id")).order_by()
     print('pracownik__imie')
+    print('czas_licznik_2',czas_licznik_2)
     #print(przepustki_suma.pracownik__imie)
 
     print("=================")
     #for obj in przepustki_suma:
         #print(obj.pracownik__imie['imie'])
 
-    print('czas_licz:',czas_licz)
+    #print('rr minęło dni: %s, godzin: %d, minut: %d' % (rr.days, rr.seconds/3600, (rr.seconds%3600)/60))
+    print('time_sum:',czas_licznik)
+    for tm in czas_licznik:
+        my_czas = tm['czas_licz']
 
-    print(przepustki_suma)
+        Hours = int(my_czas)
+        Minutes = 60 * (Hours % 1)
+        Seconds = 60 * (Minutes % 1)
+
+        print("%d:%02d:%02d" % (Hours, Minutes, Seconds))
+        #test = (datetime(12, 10, 15, Hours,Minutes,Seconds)).strftime('%H:%M:%S')
+        #print(test)
+        #minutes = (my_czas * 60) % 60
+        #seconds = hours * 3600
+        #print("%d:%02d.%02d" % (hours, minutes, seconds))
+        #print(hours,' ',minutes,' ',seconds)
+        print(tm['pracownik__nazwisko'], ' ', tm['czas_licz'])
+        print('-----------------------------------------------')
+
+
+    print('przepustki_suma',przepustki_suma)
     for obj in przepustki_suma:
         print(obj['pracownik__nazwisko'], ' ', obj['licz'])
 
@@ -764,3 +791,8 @@ def pomoc_o_programie(request):
 def pomoc_przepustka(request):
     context = {}
     return render(request, 'przepustki/pomoc_przepustka.html', context)
+
+
+def pomoc_pracownik(request):
+    context = {}
+    return render(request, 'przepustki/pomoc_pracownik.html', context)
