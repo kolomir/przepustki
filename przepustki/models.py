@@ -63,6 +63,7 @@ class Przepustka(models.Model):
     data_dodania = models.DateField('data dodania', blank=True, null=True)
     cofnieta = models.BooleanField(default=False)
     czas = models.TimeField('czas trwania')
+    czas_w_minutach = models.IntegerField(default=0)
 
     def przepustki(self):
         return str(self.pracownik) + "(" +str(self.data_wyjscia) + ")"

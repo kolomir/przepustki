@@ -5,6 +5,7 @@ from .forms import PrzepustkaForm, SkasowacPrzepustka, PracownikForm, Przepustka
 from datetime import datetime, date, time, timedelta
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.models import Group
 from django.contrib import messages
 from django.http import HttpResponse
 import csv
@@ -24,6 +25,19 @@ def przerobienie_daty(data,godzina):
    (rok1, miesiac1, dzien1) = data.split("-")
    (godzina1, minuta1) = godzina.split(":")
    return datetime(int(rok1),int(miesiac1),int(dzien1),int(godzina1),int(minuta1))
+
+
+def czas_na_minuty(t):
+    #podawany jest czas w formacie HH:MM
+    h, m, s = map(int, t.split(':'))
+    return h * 60 + m
+
+
+def int_na_czas(i):
+    #podawany jest czas jako liczba w minutach
+    hours = i // 60
+    czas = '%02d:%02d' % (hours, i % 60)
+    return czas
 
 
 # == PRZEPUSTKI ===============================================================================
@@ -132,8 +146,8 @@ def wystaw_przepustke(request):
 
         czas_r = przerobiona_data_przyjscia - przerobiona_data_wyjscia
         print('czas_r:', czas_r)
-        print('nr1 minęło dni: %s, godzin: %d, minut: %d' % (
-        czas_r.days, czas_r.seconds / 3600, (czas_r.seconds % 3600) / 60))
+        czas_w_minutach = czas_na_minuty(str(czas_r))
+        print('nr1 minęło dni: %s, godzin: %d, minut: %d' % (czas_r.days, czas_r.seconds / 3600, (czas_r.seconds % 3600) / 60))
 
     #===================================================================
     #print('data_dodania: ', data_dodania)
@@ -157,12 +171,14 @@ def wystaw_przepustke(request):
         czas = str(czas_r)
         czas = '0'+czas
         print(czas)
+        #czas_w_minutach = 0
         autor = get_author(request.user)
         if godz_przyjscie == "":
             form_przepustka.instance.data_przyjscia = data_przyjscie
             form_przepustka.instance.godzina_przyjscia = godzina_przyjscie
         form_przepustka.instance.autor_wpisu = autor
         form_przepustka.instance.czas = czas
+        form_przepustka.instance.czas_w_minutach = czas_w_minutach
         form_przepustka.instance.data_dodania = request.POST.get('data_dodania')
         form_przepustka.save()
         if request.method == 'POST':
@@ -242,12 +258,15 @@ def edytuj_przepustke(request, id):
         print('czas_r:', czas_r)
         print('nr1 minęło dni: %s, godzin: %d, minut: %d' % (
         czas_r.days, czas_r.seconds / 3600, (czas_r.seconds % 3600) / 60))
+        czas_w_minutach = czas_na_minuty(str(czas_r))
         licz = 1
 
     if wpisy.is_valid():
         if licz:
             czas = str(czas_r)
+            #czas_w_minutach = 0
             wpisy.instance.czas = czas
+            wpisy.instance.czas_w_minutach = czas_w_minutach
             wpisy.save()
 
         subject = '[' + Lokalizacja.objects.get(id=Pracownik.objects.get(id=pracownik_wpis).lokalizacja_id).lokalizacja + '] PRZEPUSTKA nr ' + str(id) + '/' + rok + ' - wystawiona w dniu: ' + data_dodania + ' - ZMIANA DANYCH!!!'
@@ -268,7 +287,7 @@ def edytuj_przepustke(request, id):
         else:
             message += 'Powrót: ' + data_przyjscie + ' o godzinie: ' + godz_przyjscie + '\n'
         message += '***********************************************************\n\n'
-        recepient = 'mirek.kolczynski@gmail.com'
+        recepient = EMAIL_RECIVE_USER
         send_mail(subject, message, EMAIL_HOST_USER, [recepient], fail_silently=False)
 
         return redirect(przepustki_dzis)
@@ -621,7 +640,6 @@ def filtrowanie(request):
 
 @login_required
 def zestawienie(request):
-    #pracownik = Pracownik.objects.all()
     qs = Przepustka.objects.all()
     pracownik = Pracownik.objects.filter(zatrudniony=True).order_by('nr_pracownika')
 
@@ -633,40 +651,40 @@ def zestawienie(request):
     if data_od == None:
         data_od = '1900-01-01'
         data_do = '1900-02-01'
-    przepustki_suma = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('pracownik__nazwisko').annotate(licz=Count('czas'))
-    czas_licznik = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('pracownik__nazwisko').annotate(czas_licz=Sum(F('czas')))
+    przepustki_suma = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('pracownik__nr_pracownika').annotate(licz=Count('czas'))
+    czas_przepustki = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=1).values('pracownik__nr_pracownika').annotate(czas_licz=Sum('czas_w_minutach'))
+    czas_odpracowania = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=2).values('pracownik__nr_pracownika').annotate(czas_licz=Sum('czas_w_minutach'))
     czas_licznik_2 = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('czas').annotate(Count("id")).order_by()
-    print('pracownik__imie')
-    print('czas_licznik_2',czas_licznik_2)
-    #print(przepustki_suma.pracownik__imie)
 
     print("=================")
-    #for obj in przepustki_suma:
-        #print(obj.pracownik__imie['imie'])
 
-    #print('rr minęło dni: %s, godzin: %d, minut: %d' % (rr.days, rr.seconds/3600, (rr.seconds%3600)/60))
-    print('time_sum:',czas_licznik)
-    for tm in czas_licznik:
+    print('czas_przepustki:',czas_przepustki)
+    for tm in czas_przepustki:
         my_czas = tm['czas_licz']
+        czasy = int_na_czas(my_czas)
 
-        Hours = int(my_czas)
-        Minutes = 60 * (Hours % 1)
-        Seconds = 60 * (Minutes % 1)
-
-        print("%d:%02d:%02d" % (Hours, Minutes, Seconds))
-        #test = (datetime(12, 10, 15, Hours,Minutes,Seconds)).strftime('%H:%M:%S')
-        #print(test)
-        #minutes = (my_czas * 60) % 60
-        #seconds = hours * 3600
-        #print("%d:%02d.%02d" % (hours, minutes, seconds))
-        #print(hours,' ',minutes,' ',seconds)
-        print(tm['pracownik__nazwisko'], ' ', tm['czas_licz'])
+        print(tm['pracownik__nr_pracownika'],' ',tm['czas_licz'],' ',czasy)
+        print(Pracownik.objects.get(nr_pracownika__exact=tm['pracownik__nr_pracownika']))
         print('-----------------------------------------------')
+    print('///////////////////////////////////////////////////')
 
+    print('czas_odpracowania:',czas_odpracowania)
+    for tm in czas_odpracowania:
+        my_czas = tm['czas_licz']
+        czasy = int_na_czas(my_czas)
+
+        print(tm['pracownik__nr_pracownika'],' ',tm['czas_licz'],' ',czasy)
+        print(Pracownik.objects.get(nr_pracownika__exact=tm['pracownik__nr_pracownika']))
+        print('-----------------------------------------------')
+    print('///////////////////////////////////////////////////')
 
     print('przepustki_suma',przepustki_suma)
     for obj in przepustki_suma:
-        print(obj['pracownik__nazwisko'], ' ', obj['licz'])
+        print(obj['pracownik__nr_pracownika'], ' ', obj['licz'])
+        print(Pracownik.objects.get(nr_pracownika__exact=obj['pracownik__nr_pracownika']))
+    print('///////////////////////////////////////////////////')
+
+
 
     '''
     if is_valid_queryparam(data_od):
@@ -796,3 +814,176 @@ def pomoc_przepustka(request):
 def pomoc_pracownik(request):
     context = {}
     return render(request, 'przepustki/pomoc_pracownik.html', context)
+
+
+# -- TYMCZASOWE ROZWIĄZANIA --------------------------------------------------------------------------
+
+@login_required
+def wystaw_przepustke_temp(request):
+    form_przepustka = PrzepustkaForm(request.POST or None, request.FILES or None)
+    pracownik = Pracownik.objects.filter(zatrudniony=True).order_by('nr_pracownika')
+    rodzaj = RodzajWpisu.objects.filter(aktywny=True).order_by('rodzaj')
+    moja_Data = datetime.now()
+    data_dodania = moja_Data.strftime("%Y-%m-%d")
+
+    liczy = 0
+    zmiana_I_start = 6
+    zmiana_II_start = 14
+    zmiana_III_start = 22
+
+    data_wyjscie = request.POST.get('data_wyjscia')
+    godz_wyjscie = request.POST.get('godzina_wyjscia')
+    data_przyjscie = request.POST.get('data_przyjscia')
+    godz_przyjscie = request.POST.get('godzina_przyjscia')
+    dat_dod = request.POST.get('data_dodania')
+    wpis = request.POST.get('rodzaj_wpisu')
+    pracownik_wpis = request.POST.get('pracownik')
+
+    if data_wyjscie:
+        przerobiona_data_wyjscia = przerobienie_daty(data_wyjscie, godz_wyjscie)
+
+
+    if godz_przyjscie == "":
+        godzina_wyjscia = "%s%s" % (godz_wyjscie[0], godz_wyjscie[1])
+        if int(godzina_wyjscia) >= zmiana_I_start and int(godzina_wyjscia) < zmiana_II_start:
+            data_przyjscie = data_wyjscie
+            godzina_przyjscie = '14:00'
+            print("data_przyjscie: ", data_przyjscie)
+            przerobiona_data_przyjscia = przerobienie_daty(data_przyjscie, godzina_przyjscie)
+            liczy = 1
+        elif int(godzina_wyjscia) >= zmiana_II_start and int(godzina_wyjscia) < zmiana_III_start:
+            data_przyjscie = data_wyjscie
+            godzina_przyjscie = '22:00'
+            print("data_przyjscie: ", data_przyjscie)
+            przerobiona_data_przyjscia = przerobienie_daty(data_przyjscie, godzina_przyjscie)
+            liczy = 1
+        elif (int(godzina_wyjscia) >= zmiana_III_start and int(godzina_wyjscia) <= 23):
+            data_przyjscie = datetime.strptime(data_wyjscie, '%Y-%m-%d').date() + timedelta(days=1)
+            godzina_przyjscie = '06:00'
+            print("data_przyjscie: ", data_przyjscie)
+            przerobiona_data_przyjscia = przerobienie_daty(str(data_przyjscie), godzina_przyjscie)
+            liczy = 1
+        elif (int(godzina_wyjscia) >= 0 and int(godzina_wyjscia) < zmiana_I_start):
+            data_przyjscie = data_wyjscie
+            godzina_przyjscie = '06:00'
+            print("data_przyjscie: ", data_przyjscie)
+            przerobiona_data_przyjscia = przerobienie_daty(str(data_przyjscie), godzina_przyjscie)
+            liczy = 1
+        else:
+            print("Godzina poza zakresem")
+    else:
+        godzina_przyjscie = godz_przyjscie
+        if data_przyjscie:
+            przerobiona_data_przyjscia = przerobienie_daty(data_przyjscie, godzina_przyjscie)
+            liczy = 1
+
+    if liczy:
+        czas_r = przerobiona_data_przyjscia - przerobiona_data_wyjscia
+        print('nr1 minęło dni: %s, godzin: %d, minut: %d' % (czas_r.days, czas_r.seconds / 3600, (czas_r.seconds % 3600) / 60))
+
+
+    if form_przepustka.is_valid():
+        czas = str(czas_r)
+        czas = '0'+czas
+        autor = get_author(request.user)
+        if godz_przyjscie == "":
+            form_przepustka.instance.data_przyjscia = data_przyjscie
+            form_przepustka.instance.godzina_przyjscia = godzina_przyjscie
+        form_przepustka.instance.autor_wpisu = autor
+        form_przepustka.instance.czas = czas
+        form_przepustka.instance.data_dodania = request.POST.get('data_dodania')
+        form_przepustka.save()
+        return redirect(przepustki_dzis)
+
+    context = {
+        'form_przepustka': form_przepustka,
+        'pracownik': pracownik,
+        'rodzaj':rodzaj,
+        'data_dodania': data_dodania,
+    }
+
+    return render(request, 'przepustki/temp_form.html', context)
+
+
+@login_required
+def edytuj_przepustke_temp(request, id):
+    wpis = get_object_or_404(Przepustka, pk=id)
+
+    wpisy = PrzepustkaEditForm(request.POST or None, request.FILES or None, instance=wpis)
+    pracownicy = Pracownik.objects.filter(zatrudniony=True).order_by('nr_pracownika')
+    rodzaj = RodzajWpisu.objects.filter(aktywny=True).order_by('rodzaj')
+    moja_Data = datetime.now()
+    data_dodania = moja_Data.strftime("%Y-%m-%d")
+    licz = 0
+
+    pracownik_wpis = request.POST.get('pracownik')
+    data_wyjscie = request.POST.get('data_wyjscia')
+    godz_wyjscie = request.POST.get('godzina_wyjscia')
+    data_przyjscie = request.POST.get('data_przyjscia')
+    godz_przyjscie = request.POST.get('godzina_przyjscia')
+    rodzaj_wpis = request.POST.get('rodzaj_wpisu')
+
+    data_wyjscie_przed = wpis.data_wyjscia
+    godz_wyjscie_przed = wpis.godzina_wyjscia
+    data_przyjscie_przed = wpis.data_przyjscia
+    godz_przyjscie_przed = wpis.godzina_przyjscia
+    print('data_przyjscie_przed ',data_przyjscie_przed)
+    print('godz_przyjscie_przed ',godz_przyjscie_przed)
+    print('data_przyjscie ',data_przyjscie)
+    print('godz_przyjscie ',godz_przyjscie)
+    print('porownaj:',str(godz_przyjscie_przed)=="14:00:00")
+    rok = wpis.data_dodania.strftime("%Y")
+    print('rok ', rok)
+
+    if data_przyjscie:
+        przerobiona_data_wyjscia = przerobienie_daty(str(data_wyjscie), str(godz_wyjscie))
+        przerobiona_data_przyjscia = przerobienie_daty(str(data_przyjscie), str(godz_przyjscie))
+        czas_r = przerobiona_data_przyjscia - przerobiona_data_wyjscia
+
+        print('nr1 minęło dni: %s, godzin: %d, minut: %d' % (czas_r.days, czas_r.seconds / 3600, (czas_r.seconds % 3600) / 60))
+        licz = 1
+
+    if wpisy.is_valid():
+        if licz:
+            czas = str(czas_r)
+            wpisy.instance.czas = czas
+            wpisy.save()
+
+        return redirect(przepustki_dzis)
+
+    context = {
+        'wpisy': wpisy,
+        'wpis': wpis,
+        'pracownik': pracownicy,
+        'rodzaj':rodzaj,
+        'data_dodania': data_dodania
+    }
+    print('wpisy:', wpisy.instance.pracownik.imie)
+    return render(request, 'przepustki/temp_edycja_form.html', context)
+
+
+def przepustki_dzis_temp(request):
+
+    przepustki_dzis = Przepustka.objects.filter(cofnieta=False, data_wyjscia=date.today()).order_by('-id')[:50]
+    przepustki_wczoraj = Przepustka.objects.filter(cofnieta=False, data_wyjscia=date.today()-timedelta(1)).order_by('-id')[:50]
+    przepustki_przyszle = Przepustka.objects.filter(cofnieta=False, data_wyjscia__gt=date.today()).order_by('-id')[:50]
+    lokalizacja = Lokalizacja.objects.filter(aktywny=True).order_by('lokalizacja')
+    przepustki_suma = Przepustka.objects.all().values('pracownik__lokalizacja__lokalizacja').annotate(licz=Count('pracownik__lokalizacja__lokalizacja'))
+    print(przepustki_suma)
+    czas_teraz = datetime.now()
+    #czas = czas_teraz.strftime("%H:%M").time()
+    #czas = datetime.strptime(czas, '%H:%M').time()
+    #print(czas_teraz)
+    #for czasy in przepustki_dzis:
+    #    if str(czasy.godzina_przyjscia) > czas_teraz:
+    #        print(czasy.godzina_przyjscia)
+
+    context = {
+        'przepustki_dzis': przepustki_dzis,
+        'przepustki_wczoraj': przepustki_wczoraj,
+        'przepustki_przyszle': przepustki_przyszle,
+        'przepustki_suma': przepustki_suma,
+        'czas': czas_teraz,
+    }
+
+    return render(request, 'przepustki/przepustki_dzis.html', context)

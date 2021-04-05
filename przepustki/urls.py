@@ -2,7 +2,8 @@ from django.urls import path
 from .views import przepustki_dzis,wystaw_przepustke,edytuj_przepustke, usun_przepustke, przywroc_przepustke, \
                    nowy_pracownik, edytuj_pracownik, usun_pracownik, przywroc_pracownik, wpisyPracownik, \
                    nowy_dzial, wpisyDzial, edytuj_dzial, usun_dzial, przywroc_dzial, login_request, logout_request, \
-                   zestawienie, filtrowanie, upload_file_view, pomoc_haslo, pomoc_o_programie, pomoc_przepustka, pomoc_pracownik
+                   zestawienie, filtrowanie, upload_file_view, pomoc_haslo, pomoc_o_programie, pomoc_przepustka, pomoc_pracownik, \
+                   wystaw_przepustke_temp, edytuj_przepustke_temp
 
 
 urlpatterns = [
@@ -42,4 +43,8 @@ urlpatterns = [
     path('pomoc_o_programie/', pomoc_o_programie, name='pomoc_o_programie'),
     path('pomoc_przepustka/', pomoc_przepustka, name='pomoc_przepustka'),
     path('pomoc_pracownik/', pomoc_pracownik, name='pomoc_pracownik'),
+
+    #= Tymczasowe ==========================================
+    path('wystaw_temp/', wystaw_przepustke_temp, name='wystaw_temp'),
+    path('edytuj_temp/', edytuj_przepustke_temp, name='edytuj_temp'),
 ]
