@@ -332,7 +332,7 @@ def usun_przepustke(request, id):
         else:
             message += 'Powrót: ' + str(data_przyjscie_przed) + ' o godzinie: ' + str(godz_przyjscie_przed) + '\n\n'
         message += '***********************************************************\n\n'
-        recepient = 'mirek.kolczynski@gmail.com'
+        recepient = EMAIL_RECIVE_USER
         send_mail(subject, message, EMAIL_HOST_USER, [recepient], fail_silently=False)
 
         return redirect(przepustki_dzis)
@@ -643,48 +643,293 @@ def zestawienie(request):
     qs = Przepustka.objects.all()
     pracownik = Pracownik.objects.filter(zatrudniony=True).order_by('nr_pracownika')
 
+    lista_zestawienie = {}
+
     data_od = request.GET.get('data_od')
     data_do = request.GET.get('data_do')
     eksport = request.GET.get('eksport')
-    print('data_od:', data_od)
-    print('data_do:', data_do)
+    #print('data_od:', data_od)
+    #print('data_do:', data_do)
     if data_od == None:
         data_od = '1900-01-01'
         data_do = '1900-02-01'
     przepustki_suma = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('pracownik__nr_pracownika').annotate(licz=Count('czas'))
+    ilosc_przepustek = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=1).values('pracownik__nr_pracownika').annotate(licz=Count('czas'))
+    ilosc_odpracowan = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=2).values('pracownik__nr_pracownika').annotate(licz=Count('czas'))
+    ilosc_sluzbowych = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=0).values('pracownik__nr_pracownika').annotate(licz=Count('czas'))
     czas_przepustki = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=1).values('pracownik__nr_pracownika').annotate(czas_licz=Sum('czas_w_minutach'))
     czas_odpracowania = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=2).values('pracownik__nr_pracownika').annotate(czas_licz=Sum('czas_w_minutach'))
-    czas_licznik_2 = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('czas').annotate(Count("id")).order_by()
+    czas_sluzbowych = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=0).values('pracownik__nr_pracownika').annotate(czas_licz=Sum('czas_w_minutach'))
+    #czas_licznik_2 = Przepustka.objects.filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('czas').annotate(Count("id")).order_by()
 
-    print("=================")
+    #print("=================")
+    #print('///////////////////////////////////////////////////')
+    #print('/// PRZEPUSTKI CZAS ///////////////////////////////')
+    #print('///////////////////////////////////////////////////')
 
-    print('czas_przepustki:',czas_przepustki)
+    #print('czas_przepustki:',czas_przepustki)
     for tm in czas_przepustki:
         my_czas = tm['czas_licz']
         czasy = int_na_czas(my_czas)
+        lista_zestawienie[tm['pracownik__nr_pracownika']] = {
+            'czas_przepustki':czasy,
+            'czas_odpracowania':0,
+            'czas_sluzbowych':0,
+            'ilosc_przepusustek':0,
+            'ilosc_wyjsc_prywatnych': 0,
+            'ilosc_odpracowan':0,
+            'ilosc_wyjsc_sluzbowych':0
+        }
 
-        print(tm['pracownik__nr_pracownika'],' ',tm['czas_licz'],' ',czasy)
-        print(Pracownik.objects.get(nr_pracownika__exact=tm['pracownik__nr_pracownika']))
-        print('-----------------------------------------------')
-    print('///////////////////////////////////////////////////')
+        #print(tm['pracownik__nr_pracownika'],' ',Pracownik.objects.get(nr_pracownika__exact=tm['pracownik__nr_pracownika']),' ',tm['czas_licz'],' ',czasy)
+        #print(Pracownik.objects.get(nr_pracownika__exact=tm['pracownik__nr_pracownika']))
 
-    print('czas_odpracowania:',czas_odpracowania)
+    #print()
+    #print('///////////////////////////////////////////////////')
+    #print('/// ODPRACOWANIE CZAS /////////////////////////////')
+    #print('///////////////////////////////////////////////////')
+    #print('czas_odpracowania:',czas_odpracowania)
     for tm in czas_odpracowania:
         my_czas = tm['czas_licz']
         czasy = int_na_czas(my_czas)
 
-        print(tm['pracownik__nr_pracownika'],' ',tm['czas_licz'],' ',czasy)
-        print(Pracownik.objects.get(nr_pracownika__exact=tm['pracownik__nr_pracownika']))
-        print('-----------------------------------------------')
-    print('///////////////////////////////////////////////////')
+        if tm['pracownik__nr_pracownika'] in lista_zestawienie:
+            #print('JEST --->>',lista_zestawienie[tm['pracownik__nr_pracownika']]['czas_przepustki'])
 
-    print('przepustki_suma',przepustki_suma)
+            lista_zestawienie[tm['pracownik__nr_pracownika']] = {
+                'czas_przepustki':lista_zestawienie[tm['pracownik__nr_pracownika']]['czas_przepustki'],
+                'czas_odpracowania':czasy,
+                'czas_sluzbowych':0,
+                'ilosc_przepusustek':0,
+                'ilosc_wyjsc_prywatnych': 0,
+                'ilosc_odpracowan':0,
+                'ilosc_wyjsc_sluzbowych':0
+            }
+        else:
+            #print('NIE MA --->>')
+            lista_zestawienie[tm['pracownik__nr_pracownika']] = {
+                'czas_przepustki': 0,
+                'czas_odpracowania': czasy,
+                'czas_sluzbowych':0,
+                'ilosc_przepusustek': 0,
+                'ilosc_wyjsc_prywatnych': 0,
+                'ilosc_odpracowan': 0,
+                'ilosc_wyjsc_sluzbowych': 0
+            }
+
+        #print(tm['pracownik__nr_pracownika'],' ',Pracownik.objects.get(nr_pracownika__exact=tm['pracownik__nr_pracownika']),' ',tm['czas_licz'],' ',czasy)
+        #print(Pracownik.objects.get(nr_pracownika__exact=tm['pracownik__nr_pracownika']))
+        #print('-----------------------------------------------')
+
+    #print()
+    #print('///////////////////////////////////////////////////')
+    #print('/// SLUZBOWY CZAS /////////////////////////////')
+    #print('///////////////////////////////////////////////////')
+    #print('czas_odpracowania:',czas_odpracowania)
+    for tm in czas_sluzbowych:
+        my_czas = tm['czas_licz']
+        czasy = int_na_czas(my_czas)
+
+        if tm['pracownik__nr_pracownika'] in lista_zestawienie:
+            #print('JEST --->>',lista_zestawienie[tm['pracownik__nr_pracownika']]['czas_przepustki'])
+
+            lista_zestawienie[tm['pracownik__nr_pracownika']] = {
+                'czas_przepustki':lista_zestawienie[tm['pracownik__nr_pracownika']]['czas_przepustki'],
+                'czas_odpracowania':lista_zestawienie[tm['pracownik__nr_pracownika']]['czas_odpracowania'],
+                'czas_sluzbowych':czasy,
+                'ilosc_przepusustek':0,
+                'ilosc_wyjsc_prywatnych': 0,
+                'ilosc_odpracowan':0,
+                'ilosc_wyjsc_sluzbowych':0
+            }
+        else:
+            #print('NIE MA --->>')
+            lista_zestawienie[tm['pracownik__nr_pracownika']] = {
+                'czas_przepustki': 0,
+                'czas_odpracowania': 0,
+                'czas_sluzbowych': czasy,
+                'ilosc_przepusustek': 0,
+                'ilosc_wyjsc_prywatnych': 0,
+                'ilosc_odpracowan': 0,
+                'ilosc_wyjsc_sluzbowych': 0
+            }
+
+        #print(tm['pracownik__nr_pracownika'],' ',Pracownik.objects.get(nr_pracownika__exact=tm['pracownik__nr_pracownika']),' ',tm['czas_licz'],' ',czasy)
+        #print(Pracownik.objects.get(nr_pracownika__exact=tm['pracownik__nr_pracownika']))
+        #print('-----------------------------------------------')
+    #print()
+    #print('///////////////////////////////////////////////////')
+    #print('/// ILOSC WPISÓW //////////////////////////////////')
+    #print('///////////////////////////////////////////////////')
+
+    #print('przepustki_suma',przepustki_suma)
     for obj in przepustki_suma:
-        print(obj['pracownik__nr_pracownika'], ' ', obj['licz'])
-        print(Pracownik.objects.get(nr_pracownika__exact=obj['pracownik__nr_pracownika']))
+        ilosc = obj['licz']
+        if obj['pracownik__nr_pracownika'] in lista_zestawienie:
+            #print('JEST', ilosc)
+            lista_zestawienie[obj['pracownik__nr_pracownika']] = {
+                'czas_przepustki': lista_zestawienie[obj['pracownik__nr_pracownika']]['czas_przepustki'],
+                'czas_odpracowania': lista_zestawienie[obj['pracownik__nr_pracownika']]['czas_odpracowania'],
+                'czas_sluzbowych':lista_zestawienie[obj['pracownik__nr_pracownika']]['czas_sluzbowych'],
+                'ilosc_przepusustek': ilosc,
+                'ilosc_wyjsc_prywatnych': 0,
+                'ilosc_odpracowan': 0,
+                'ilosc_wyjsc_sluzbowych': 0
+            }
+        else:
+            #print('NIE MA')
+            lista_zestawienie[obj['pracownik__nr_pracownika']] = {
+                'czas_przepustki': 0,
+                'czas_odpracowania': 0,
+                'czas_sluzbowych':0,
+                'ilosc_przepusustek': ilosc,
+                'ilosc_wyjsc_prywatnych': 0,
+                'ilosc_odpracowan': 0,
+                'ilosc_wyjsc_sluzbowych': 0
+            }
+        #print(obj['pracownik__nr_pracownika'], ' ',Pracownik.objects.get(nr_pracownika__exact=obj['pracownik__nr_pracownika']),' ', ilosc)
+        #print(Pracownik.objects.get(nr_pracownika__exact=obj['pracownik__nr_pracownika']))
+
+    #print()
+    #print('///////////////////////////////////////////////////')
+    #print('/// PRZEPUSTKI ILOSC //////////////////////////////')
+    #print('///////////////////////////////////////////////////')
+    for obj in ilosc_przepustek:
+        ilosc = obj['licz']
+        if obj['pracownik__nr_pracownika'] in lista_zestawienie:
+            #print('JEST', ilosc)
+            lista_zestawienie[obj['pracownik__nr_pracownika']] = {
+                'czas_przepustki': lista_zestawienie[obj['pracownik__nr_pracownika']]['czas_przepustki'],
+                'czas_odpracowania': lista_zestawienie[obj['pracownik__nr_pracownika']]['czas_odpracowania'],
+                'czas_sluzbowych': lista_zestawienie[obj['pracownik__nr_pracownika']]['czas_sluzbowych'],
+                'ilosc_przepusustek': lista_zestawienie[obj['pracownik__nr_pracownika']]['ilosc_przepusustek'],
+                'ilosc_wyjsc_prywatnych': ilosc,
+                'ilosc_odpracowan': 0,
+                'ilosc_wyjsc_sluzbowych': 0
+            }
+        else:
+            #print('NIE MA')
+            lista_zestawienie[obj['pracownik__nr_pracownika']] = {
+                'czas_przepustki': 0,
+                'czas_odpracowania': 0,
+                'czas_sluzbowych':0,
+                'ilosc_przepusustek': 0,
+                'ilosc_wyjsc_prywatnych': ilosc,
+                'ilosc_odpracowan': 0,
+                'ilosc_wyjsc_sluzbowych': 0
+            }
+        #print(obj['pracownik__nr_pracownika'], ' ',Pracownik.objects.get(nr_pracownika__exact=obj['pracownik__nr_pracownika']),' ', ilosc)
+
+    #print()
+    #print('///////////////////////////////////////////////////')
+    #print('/// ODPRACOWANIE ILOSC ////////////////////////////')
+    #print('///////////////////////////////////////////////////')
+    for obj in ilosc_odpracowan:
+        ilosc = obj['licz']
+        if obj['pracownik__nr_pracownika'] in lista_zestawienie:
+            #print('JEST', ilosc)
+            lista_zestawienie[obj['pracownik__nr_pracownika']] = {
+                'czas_przepustki': lista_zestawienie[obj['pracownik__nr_pracownika']]['czas_przepustki'],
+                'czas_odpracowania': lista_zestawienie[obj['pracownik__nr_pracownika']]['czas_odpracowania'],
+                'czas_sluzbowych': lista_zestawienie[obj['pracownik__nr_pracownika']]['czas_sluzbowych'],
+                'ilosc_przepusustek': lista_zestawienie[obj['pracownik__nr_pracownika']]['ilosc_przepusustek'],
+                'ilosc_wyjsc_prywatnych': lista_zestawienie[obj['pracownik__nr_pracownika']]['ilosc_wyjsc_prywatnych'],
+                'ilosc_odpracowan': ilosc,
+                'ilosc_wyjsc_sluzbowych': 0
+            }
+        else:
+            #print('NIE MA')
+            lista_zestawienie[obj['pracownik__nr_pracownika']] = {
+                'czas_przepustki': 0,
+                'czas_odpracowania': 0,
+                'czas_sluzbowych': 0,
+                'ilosc_przepusustek': 0,
+                'ilosc_wyjsc_prywatnych': 0,
+                'ilosc_odpracowan': ilosc,
+                'ilosc_wyjsc_sluzbowych': 0
+            }
+        #print(obj['pracownik__nr_pracownika'], ' ',Pracownik.objects.get(nr_pracownika__exact=obj['pracownik__nr_pracownika']),' ', ilosc)
+
+    #print()
+    #print('///////////////////////////////////////////////////')
+    #print('/// SLUZBOWE ILOSC ////////////////////////////////')
+    #print('///////////////////////////////////////////////////')
+    for obj in ilosc_sluzbowych:
+        ilosc = obj['licz']
+        if obj['pracownik__nr_pracownika'] in lista_zestawienie:
+            #print('JEST', ilosc)
+            lista_zestawienie[obj['pracownik__nr_pracownika']] = {
+                'czas_przepustki': lista_zestawienie[obj['pracownik__nr_pracownika']]['czas_przepustki'],
+                'czas_odpracowania': lista_zestawienie[obj['pracownik__nr_pracownika']]['czas_odpracowania'],
+                'czas_sluzbowych': lista_zestawienie[obj['pracownik__nr_pracownika']]['czas_sluzbowych'],
+                'ilosc_przepusustek': lista_zestawienie[obj['pracownik__nr_pracownika']]['ilosc_przepusustek'],
+                'ilosc_wyjsc_prywatnych': lista_zestawienie[obj['pracownik__nr_pracownika']]['ilosc_wyjsc_prywatnych'],
+                'ilosc_odpracowan': lista_zestawienie[obj['pracownik__nr_pracownika']]['ilosc_odpracowan'],
+                'ilosc_wyjsc_sluzbowych': ilosc
+            }
+        else:
+            #print('NIE MA')
+            lista_zestawienie[obj['pracownik__nr_pracownika']] = {
+                'czas_przepustki': 0,
+                'czas_odpracowania': 0,
+                'czas_sluzbowych': 0,
+                'ilosc_przepusustek': 0,
+                'ilosc_wyjsc_prywatnych': 0,
+                'ilosc_odpracowan': 0,
+                'ilosc_wyjsc_sluzbowych': ilosc
+            }
+        #print(obj['pracownik__nr_pracownika'], ' ',Pracownik.objects.get(nr_pracownika__exact=obj['pracownik__nr_pracownika']),' ', ilosc)
+
+    print()
+    print('///////////////////////////////////////////////////')
+    print('/// GOTOWE ZESTAWIENIE ////////////////////////////')
     print('///////////////////////////////////////////////////')
 
+    for obj in lista_zestawienie:
+        print(obj,'; ',lista_zestawienie[obj])
 
+    #print('-----------------------------------------------')
+
+    if eksport == 'on':
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="zestawienie.csv"'
+        response.write(u'\ufeff'.encode('utf8'))
+
+        writer = csv.writer(response, dialect='excel', delimiter=';')
+        writer.writerow(
+            [
+                'nr_pracownika',
+                'pracownik',
+                'ilosc_przepusustek',
+                'ilosc_wyjsc_prywatnych',
+                'ilosc_odpracowan',
+                'ilosc_wyjsc_sluzbowych',
+                'czas_przepustki',
+                'czas_odpracowania',
+                'czas_sluzbowych'
+            ]
+        )
+
+        for obj in lista_zestawienie:
+            #dla_pracownika = "{} {}".format(obj.pracownik.nazwisko, obj.pracownik.imie)
+            #print(obj,' ',Pracownik.objects.get(nr_pracownika__exact=obj),' ',lista_zestawienie[obj]['czas_przepustki'])
+
+            writer.writerow(
+                [
+                    obj,
+                    Pracownik.objects.get(nr_pracownika__exact=obj),
+                    lista_zestawienie[obj]['ilosc_przepusustek'],
+                    lista_zestawienie[obj]['ilosc_wyjsc_prywatnych'],
+                    lista_zestawienie[obj]['ilosc_odpracowan'],
+                    lista_zestawienie[obj]['czas_sluzbowych'],
+                    lista_zestawienie[obj]['czas_przepustki'],
+                    lista_zestawienie[obj]['czas_odpracowania'],
+                    lista_zestawienie[obj]['czas_sluzbowych']
+                ]
+            )
+
+        return response
 
     '''
     if is_valid_queryparam(data_od):
