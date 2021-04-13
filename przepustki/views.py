@@ -1124,6 +1124,7 @@ def wystaw_przepustke_temp(request):
 
     if liczy:
         czas_r = przerobiona_data_przyjscia - przerobiona_data_wyjscia
+        czas_w_minutach = czas_na_minuty(str(czas_r))
         print('nr1 minęło dni: %s, godzin: %d, minut: %d' % (czas_r.days, czas_r.seconds / 3600, (czas_r.seconds % 3600) / 60))
 
 
@@ -1136,9 +1137,10 @@ def wystaw_przepustke_temp(request):
             form_przepustka.instance.godzina_przyjscia = godzina_przyjscie
         form_przepustka.instance.autor_wpisu = autor
         form_przepustka.instance.czas = czas
+        form_przepustka.instance.czas_w_minutach = czas_w_minutach
         form_przepustka.instance.data_dodania = request.POST.get('data_dodania')
         form_przepustka.save()
-        return redirect(przepustki_dzis)
+        return redirect(przepustki_dzis_temp)
 
     context = {
         'form_przepustka': form_przepustka,
@@ -1186,15 +1188,17 @@ def edytuj_przepustke_temp(request, id):
         czas_r = przerobiona_data_przyjscia - przerobiona_data_wyjscia
 
         print('nr1 minęło dni: %s, godzin: %d, minut: %d' % (czas_r.days, czas_r.seconds / 3600, (czas_r.seconds % 3600) / 60))
+        czas_w_minutach = czas_na_minuty(str(czas_r))
         licz = 1
 
     if wpisy.is_valid():
         if licz:
             czas = str(czas_r)
             wpisy.instance.czas = czas
+            wpisy.instance.czas_w_minutach = czas_w_minutach
             wpisy.save()
 
-        return redirect(przepustki_dzis)
+        return redirect(przepustki_dzis_temp)
 
     context = {
         'wpisy': wpisy,
@@ -1209,8 +1213,8 @@ def edytuj_przepustke_temp(request, id):
 
 def przepustki_dzis_temp(request):
 
-    przepustki_dzis = Przepustka.objects.filter(cofnieta=False, data_wyjscia=date.today()).order_by('-id')[:50]
-    przepustki_wczoraj = Przepustka.objects.filter(cofnieta=False, data_wyjscia=date.today()-timedelta(1)).order_by('-id')[:50]
+    przepustki_dzis = Przepustka.objects.filter(cofnieta=False, data_dodania=date.today()).order_by('-id')[:50]
+    przepustki_wczoraj = Przepustka.objects.filter(cofnieta=False, data_dodania__lt=date.today(), data_dodania__gt=date.today()-timedelta(7)).order_by('-id')[:50]
     przepustki_przyszle = Przepustka.objects.filter(cofnieta=False, data_wyjscia__gt=date.today()).order_by('-id')[:50]
     lokalizacja = Lokalizacja.objects.filter(aktywny=True).order_by('lokalizacja')
     przepustki_suma = Przepustka.objects.all().values('pracownik__lokalizacja__lokalizacja').annotate(licz=Count('pracownik__lokalizacja__lokalizacja'))
@@ -1231,4 +1235,4 @@ def przepustki_dzis_temp(request):
         'czas': czas_teraz,
     }
 
-    return render(request, 'przepustki/przepustki_dzis.html', context)
+    return render(request, 'przepustki/temp_przepustki_dzis.html', context)

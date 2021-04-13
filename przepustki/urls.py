@@ -3,7 +3,7 @@ from .views import przepustki_dzis,wystaw_przepustke,edytuj_przepustke, usun_prz
                    nowy_pracownik, edytuj_pracownik, usun_pracownik, przywroc_pracownik, wpisyPracownik, \
                    nowy_dzial, wpisyDzial, edytuj_dzial, usun_dzial, przywroc_dzial, login_request, logout_request, \
                    zestawienie, filtrowanie, upload_file_view, pomoc_haslo, pomoc_o_programie, pomoc_przepustka, pomoc_pracownik, \
-                   wystaw_przepustke_temp, edytuj_przepustke_temp
+                   wystaw_przepustke_temp, edytuj_przepustke_temp, przepustki_dzis_temp
 
 
 urlpatterns = [
@@ -46,5 +46,6 @@ urlpatterns = [
 
     #= Tymczasowe ==========================================
     path('wystaw_temp/', wystaw_przepustke_temp, name='wystaw_temp'),
-    path('edytuj_temp/', edytuj_przepustke_temp, name='edytuj_temp'),
+    path('edytuj_temp/<int:id>/', edytuj_przepustke_temp, name='edytuj_temp'),
+    path('przepustki_temp/', przepustki_dzis_temp, name='przepustki_temp'),
 ]
