@@ -1,0 +1,36 @@
+{% extends 'przepustki/base.html' %}
+{% load bootstrap %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="card col-md-6 my-3 mx-auto text-white green darken-1">
+            <div class="card-body">
+                <h2>Szczegóły pracownika:</h2>
+            </div>
+        </div>
+        <div class="card col-md-6 my-3 mx-auto">
+            <div class="card-body">
+
+                <form method="post" role="form" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="form-row mb-3">
+                        <select name="pracownik" class="mdb-select md-form" id="id_pracownik" required  searchable="Search here...">
+                            <option value="" disabled selected>Dla kogo przepustka?</option>
+                            {% for result in pracownik %}
+                            <option value="{{ result.id }}">({{ result.nr_pracownika }}) {{ result.nazwisko }} {{ result.imie }}</option>
+                            {% endfor %}
+                        </select>
+                        <label class="mdb-main-label" for="id_pracownik">Nr pracownika</label>
+                    </div>
+                    <div class="form-row mb-3">
+                        <div class="col">
+                            <button type="submit" class="btn btn-outline-primary btn-rounded waves-effect">Zapisz</button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

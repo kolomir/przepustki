@@ -8,12 +8,17 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent-555">
                 <ul class="navbar-nav mr-auto">
                     {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="/wystaw_przepustke_form">Przepustka<span class="sr-only">(current)</span></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/eksport">Eksport</a>
-                        </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/wystaw_przepustke_form">Przepustka<span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLinkDane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Zestawienia danych <span class="badge badge-pill badge-danger">Nowość</span></a>
+                        <div class="dropdown-menu  dropdown-success" aria-labelledby="navbarDropdownMenuLink">
+                            <a class="dropdown-item" href="/eksport">Eksport <span class="badge badge-pill badge-info">Aktualizacja</span></a>
+                            <a class="dropdown-item" href="/zestawienie">Zestawienie <span class="badge badge-pill badge-danger">Nowość</span></a>
+                            <a class="dropdown-item" href="/szczegoly_form">Pracownicy <span class="badge badge-pill badge-danger">Nowość</span></a>
+                        </div>
+                    </li>
                     <!-- Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLinkListy" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Przeglądaj</a>

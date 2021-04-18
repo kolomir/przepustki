@@ -141,3 +141,9 @@ class CsvModelForm(forms.ModelForm):
     class Meta:
         model = Csv
         fields = ('file_name',)
+
+
+class PracownikDetal(ModelForm):
+    class Meta:
+        model = Pracownik
+        fields = ['nr_pracownika','imie','nazwisko','zatrudniony']

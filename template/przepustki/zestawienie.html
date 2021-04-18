@@ -13,13 +13,15 @@
                 <form method="get">
 
                     <div class="form-row mb-3">
-                        <div class="col md-form">
-                            <label class="control-label" for="id_od">Data od</label>
-                            <input id="id_od" class="form-control" type="search" name="data_od" placeholder="Data od..." />
+                        <div class="col md-form input-with-post-icon datepicker">
+                            <label for="id_data_od">Data od...</label>
+                            <input id="id_data_od" class=" form-control" type="text" name="data_od" placeholder="Data od..." step="1" required>
+                            <i class="fas fa-calendar input-prefix" tabindex=0></i>
                         </div>
-                        <div class="col md-form">
-                            <label class="control-label" for="id_do">Data do</label>
-                            <input id="id_do" class="form-control" type="search" name="data_do" placeholder="Data do..." />
+                        <div class="col md-form input-with-post-icon datepicker">
+                            <label for="id_data_do">Data od...</label>
+                            <input id="id_data_do" class=" form-control" type="text" name="data_do" placeholder="Data do..." step="1" required>
+                            <i class="fas fa-calendar input-prefix" tabindex=0></i>
                         </div>
                     </div>
                     <input type="hidden" id="eksport" name="eksport" value="on">

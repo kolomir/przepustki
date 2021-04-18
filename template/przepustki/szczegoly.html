@@ -1,0 +1,58 @@
+{% extends 'przepustki/base.html' %}
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="card col-md-6 my-3 mx-auto text-white green darken-1">
+            <div class="card-body">
+                <h2>Szczegóły pracownika</h2>
+            </div>
+        </div>
+        <!-- Jumbotron -->
+        <div class="jumbotron text-center col-md-6 my-3 mx-auto">
+            <!-- Title -->
+            <h2 class="card-title h2">({{ lista.id }}) {{ lista.imie }} {{ lista.nazwisko }}</h2>
+            Zestawienie za {{ lista.okres }} {{ lista.rok }} roku
+            <!-- Subtitle -->
+            {% if lista.prezwaga == 2 %}
+                <p class="note note-danger"><strong>Bilans ujemny:</strong>
+                    Przewaga przepustek. Do odpracowania pozostało: {{ lista.ile_prezwaga }}
+                </p>
+            {% elif lista.prezwaga == 1 %}
+                <p class="note note-warning"><strong>Bilans dodatni:</strong>
+                    Przewaga czasu nadpracowanego. Czas nadliczbowy to: {{ lista.ile_prezwaga }}
+                </p>
+            {% elif lista.prezwaga == 0 %}
+                <p class="note note-success"><strong>Bilans zrównoważony :</strong>
+                    Wszystkie przepustki zostały odpracowane.
+                </p>
+            {% endif %}
+
+            <!-- Grid row -->
+            <div class="row d-flex justify-content-center">
+            <!-- Grid column -->
+                <div class="col-xl-7 pb-2"><br />
+                    <p class="card-text">
+                        Ilość wszystkich wpisów: {{ lista.przepustek }}<br />
+                        <hr width="50%"/>
+                        Ilość prywatnych wyjść: {{ lista.wyjscia_prywatne }}<br />
+                        <hr width="50%"/>
+                        Ilość odpracowań: {{ lista.odpracowania }}<br />
+                        <hr width="50%"/>
+                        Ilość służbowych wyjść: {{ lista.sluzbowe }}<br />
+                        <hr width="50%"/><br />
+                        Czas przepustek prywatnych: {{ lista.czas_przepustek }}<br />
+                        <hr width="50%"/>
+                        Czas odpracowań: {{ lista.czas_odpracowanych }}<br />
+                        <hr width="50%"/>
+                        Czas przepustek służbowych: {{ lista.czas_sluzbowych }}<br />
+                        <hr width="50%"/>
+                    </p>
+                </div>
+            <!-- Grid column -->
+            </div>
+
+        </div>
+        <!-- Jumbotron -->
+    </div>
+
+{% endblock content %}

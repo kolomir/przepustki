@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Przepustka, Pracownik, RodzajWpisu, Dzial, Lokalizacja, Autor, Csv
 from django.contrib.auth.decorators import login_required
-from .forms import PrzepustkaForm, SkasowacPrzepustka, PracownikForm, PrzepustkaEditForm, SkasowacPracownik, DzialForm, CsvModelForm
+from .forms import PrzepustkaForm, SkasowacPrzepustka, PracownikForm, PrzepustkaEditForm, SkasowacPracownik, DzialForm, CsvModelForm, PracownikDetal
 from datetime import datetime, date, time, timedelta
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
@@ -171,6 +171,7 @@ def wystaw_przepustke(request):
         czas = str(czas_r)
         czas = '0'+czas
         print(czas)
+        id_pracownika = Pracownik.objects.get(id=pracownik_wpis).nr_pracownika
         #czas_w_minutach = 0
         autor = get_author(request.user)
         if godz_przyjscie == "":
@@ -195,7 +196,7 @@ def wystaw_przepustke(request):
             message += '***********************************************************\n\n'
             recepient = EMAIL_RECIVE_USER
             send_mail(subject, message, EMAIL_HOST_USER, [recepient], fail_silently=False)
-        return redirect(przepustki_dzis)
+        return redirect(pracownik_szczegoly, id_pracownika)
 
     context = {
         'form_przepustka': form_przepustka,
@@ -262,6 +263,7 @@ def edytuj_przepustke(request, id):
         licz = 1
 
     if wpisy.is_valid():
+        id_pracownika = Pracownik.objects.get(id=pracownik_wpis).nr_pracownika
         if licz:
             czas = str(czas_r)
             #czas_w_minutach = 0
@@ -289,8 +291,7 @@ def edytuj_przepustke(request, id):
         message += '***********************************************************\n\n'
         recepient = EMAIL_RECIVE_USER
         send_mail(subject, message, EMAIL_HOST_USER, [recepient], fail_silently=False)
-
-        return redirect(przepustki_dzis)
+        return redirect(pracownik_szczegoly, id_pracownika)
 
     context = {
         'wpisy': wpisy,
@@ -318,6 +319,7 @@ def usun_przepustke(request, id):
     rok = wpis.data_dodania.strftime("%Y")
 
     if wpisy.is_valid():
+        id_pracownika = Pracownik.objects.get(id=Przepustka.objects.get(id=id).pracownik_id).nr_pracownika
         kasuj = wpisy.save(commit=False)
         kasuj.cofnieta = 1
         kasuj.save()
@@ -334,8 +336,7 @@ def usun_przepustke(request, id):
         message += '***********************************************************\n\n'
         recepient = EMAIL_RECIVE_USER
         send_mail(subject, message, EMAIL_HOST_USER, [recepient], fail_silently=False)
-
-        return redirect(przepustki_dzis)
+        return redirect(pracownik_szczegoly, id_pracownika)
 
     context = {
         'wpis': wpis
@@ -349,10 +350,11 @@ def przywroc_przepustke(request, id):
     wpisy = SkasowacPrzepustka(request.POST or None, request.FILES or None, instance=wpis)
 
     if wpisy.is_valid():
+        id_pracownika = Pracownik.objects.get(id=Przepustka.objects.get(id=id).pracownik_id).nr_pracownika
         kasuj = wpisy.save(commit=False)
         kasuj.cofnieta = 0
         kasuj.save()
-        return redirect(przepustki_dzis)
+        return redirect(pracownik_szczegoly, id_pracownika)
 
     context = {
         'wpis': wpis
@@ -648,8 +650,10 @@ def zestawienie(request):
     data_od = request.GET.get('data_od')
     data_do = request.GET.get('data_do')
     eksport = request.GET.get('eksport')
-    #print('data_od:', data_od)
-    #print('data_do:', data_do)
+    print('data_od:', data_od)
+    print('data_do:', data_do)
+
+
     if data_od == None:
         data_od = '1900-01-01'
         data_do = '1900-02-01'
@@ -1061,6 +1065,137 @@ def pomoc_pracownik(request):
     return render(request, 'przepustki/pomoc_pracownik.html', context)
 
 
+def pracownik_szczegoly_form(request):
+    form_pracownik_detal = PracownikDetal(request.POST or None, request.FILES or None)
+    pracownik = Pracownik.objects.filter(zatrudniony=True).order_by('nr_pracownika')
+    pracownik_wpis = request.POST.get('pracownik')
+    if pracownik_wpis == None:
+        print('puste')
+    else:
+        id_pracownika = Pracownik.objects.get(id=pracownik_wpis).nr_pracownika
+        print('wybrane:',pracownik_wpis)
+        return redirect(pracownik_szczegoly, id_pracownika)
+
+
+    context = {
+        'pracownik': pracownik
+    }
+
+    return render(request, 'przepustki/szczegoly_form.html', context)
+
+
+def pracownik_szczegoly(request, id):
+    #wpis = get_object_or_404(Pracownik, pk=id)
+    szczegoly = Pracownik.objects.filter(nr_pracownika__exact=id)
+
+    data_miesiac = datetime.now().strftime("%m")
+    data_rok = datetime.now().strftime("%Y")
+    print('miesiac:',data_miesiac)
+    print('rok:',data_rok)
+
+    if data_miesiac > '00' and data_miesiac < '07':
+        print('pierwsza połowa')
+        okres = 'I półrocze'
+        data_od = data_rok+'-01-01'
+        data_do = data_rok+'-06-30'
+
+
+    elif data_miesiac > '06' and data_miesiac < '13':
+        print('druga połowa')
+        okres = 'II półrocze'
+        data_od = data_rok+'-07-01'
+        data_do = data_rok+'-12-31'
+
+
+    else:
+        print('Coś poszło nie tak z datą!!!')
+
+    przepustki_suma = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('pracownik__nr_pracownika').annotate(licz=Count('czas'))
+    ilosc_przepustek = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=1).values('pracownik__nr_pracownika').annotate(licz=Count('czas'))
+    ilosc_odpracowan = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=2).values('pracownik__nr_pracownika').annotate(licz=Count('czas'))
+    ilosc_sluzbowych = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=0).values('pracownik__nr_pracownika').annotate(licz=Count('czas'))
+    czas_przepustki = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=1).values('pracownik__nr_pracownika').annotate(czas_licz=Sum('czas_w_minutach'))
+    czas_odpracowania = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=2).values('pracownik__nr_pracownika').annotate(czas_licz=Sum('czas_w_minutach'))
+    czas_sluzbowych = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=0).values('pracownik__nr_pracownika').annotate(czas_licz=Sum('czas_w_minutach'))
+
+
+    lista_zestawienie = {
+        'przepustek':0,
+        'wyjscia_prywatne':0,
+        'odpracowania':0,
+        'sluzbowe':0,
+        'czas_przepustek':0,
+        'czas_odpracowanych':0,
+        'czas_sluzbowych':0
+    }
+
+    lista_zestawienie['rok'] =data_rok
+    lista_zestawienie['okres'] = okres
+    czas_przep = 0
+    czas_odpr = 0
+
+    for ob in szczegoly:
+        lista_zestawienie['id'] = ob.nr_pracownika
+        lista_zestawienie['nazwisko'] = ob.nazwisko
+        lista_zestawienie['imie'] = ob.imie
+
+    for ob in przepustki_suma:
+        lista_zestawienie['przepustek'] = ob['licz']
+
+    for ob in ilosc_przepustek:
+        lista_zestawienie['wyjscia_prywatne'] = ob['licz']
+
+    for ob in ilosc_sluzbowych:
+        lista_zestawienie['sluzbowe'] = ob['licz']
+
+    for ob in ilosc_odpracowan:
+        lista_zestawienie['odpracowania'] = ob['licz']
+
+    for ob in czas_przepustki:
+        czasy = int_na_czas(ob['czas_licz'])
+        czas_przep = ob['czas_licz']
+        lista_zestawienie['czas_przepustek'] = czasy
+
+    for ob in czas_odpracowania:
+        czasy = int_na_czas(ob['czas_licz'])
+        czas_odpr = ob['czas_licz']
+        lista_zestawienie['czas_odpracowanych'] = czasy
+
+    for ob in czas_sluzbowych:
+        czasy = int_na_czas(ob['czas_licz'])
+        lista_zestawienie['czas_sluzbowych'] = czasy
+
+    if czas_przep < czas_odpr:
+        czas2 = czas_odpr - czas_przep
+        lista_zestawienie['prezwaga'] = 1
+        lista_zestawienie['ile_prezwaga'] = int_na_czas(czas2)
+    elif czas_przep > czas_odpr:
+        czas2 = czas_przep - czas_odpr
+        lista_zestawienie['prezwaga'] = 2
+        lista_zestawienie['ile_prezwaga'] = int_na_czas(czas2)
+    else:
+        print('czas na 0')
+        lista_zestawienie['prezwaga'] = 0
+        lista_zestawienie['ile_prezwaga'] = 0
+
+    print(
+        'Id:', lista_zestawienie['id'],
+        '; Imie:',lista_zestawienie['imie'],'Nazwisko:',lista_zestawienie['nazwisko'],
+        '; Przepustek:',lista_zestawienie['przepustek'],
+        '; Wyjsc prywatnych:',lista_zestawienie['wyjscia_prywatne'],
+        '; Odpracowania:',lista_zestawienie['odpracowania'],
+        '; Sluzbowe:',lista_zestawienie['sluzbowe'],
+        '; Czas przepustek:',lista_zestawienie['czas_przepustek'],
+        '; Czas odpracowanych:',lista_zestawienie['czas_odpracowanych'],
+        '; Czas sluzbowych:',lista_zestawienie['czas_sluzbowych']
+    )
+
+    context = {
+        'lista': lista_zestawienie
+    }
+    return render(request, 'przepustki/szczegoly.html', context)
+
+
 # -- TYMCZASOWE ROZWIĄZANIA --------------------------------------------------------------------------
 
 @login_required
@@ -1236,3 +1371,4 @@ def przepustki_dzis_temp(request):
     }
 
     return render(request, 'przepustki/temp_przepustki_dzis.html', context)
+
