@@ -1118,6 +1118,8 @@ def pracownik_szczegoly(request, id):
     czas_odpracowania = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=2).values('pracownik__nr_pracownika').annotate(czas_licz=Sum('czas_w_minutach'))
     czas_sluzbowych = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=0).values('pracownik__nr_pracownika').annotate(czas_licz=Sum('czas_w_minutach'))
 
+    wpisy = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(cofnieta=False).order_by('-id')
+
 
     lista_zestawienie = {
         'przepustek':0,
@@ -1191,7 +1193,8 @@ def pracownik_szczegoly(request, id):
     )
 
     context = {
-        'lista': lista_zestawienie
+        'lista': lista_zestawienie,
+        'wpisy': wpisy
     }
     return render(request, 'przepustki/szczegoly.html', context)
 

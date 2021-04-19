@@ -53,6 +53,45 @@
 
         </div>
         <!-- Jumbotron -->
+        <div class="card col-md-12 my-3 mx-auto">
+            <table id="dtWpisyPrzyszle" class="table table-striped table-hover table-sm table-borderless" cellspacing="0" width="100%">
+                <thead class="black white-text">
+                    <tr>
+                        <th class="th-sm" width="5%">#</th>
+                        <th class="th-sm">Wystawiona dla... </th>
+                        <th class="th-sm" width="15%">Data od / Godzina od</th>
+                        <th class="th-sm" width="15%">Data do / Godzina do</th>
+                        <th class="th-sm" width="15%">Rodzaj</th>
+                        <th class="th-sm" width="10%">Dodane przez</th>
+                        <th class="th-sm" width="15%">Data dodania</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for wpis in wpisy %}
+                    <tr>
+                        <th scope="row">{{ wpis.id }}</th>
+                        <td>{{ wpis.pracownik }}</td>
+                        <td>{{ wpis.data_wyjscia }} {{ wpis.godzina_wyjscia }}</td>
+                        <td>{{ wpis.data_przyjscia }} {{ wpis.godzina_przyjscia }}</td>
+                        <td>{{ wpis.rodzaj_wpisu }}</td>
+                        <td>{{ wpis.autor_wpisu }}</td>
+                        <td>{{ wpis.data_dodania }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="black white-text">
+                    <tr>
+                        <th class="th-sm">#</th>
+                        <th class="th-sm">Wystawiona dla... </th>
+                        <th class="th-sm">Data od / Godzina od</th>
+                        <th class="th-sm">Data do / Godzina do</th>
+                        <th class="th-sm">Rodzaj</th>
+                        <th class="th-sm">Dodane przez</th>
+                        <th class="th-sm">Data dodania</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
     </div>
 
 {% endblock content %}
