@@ -1110,13 +1110,13 @@ def pracownik_szczegoly(request, id):
     else:
         print('Coś poszło nie tak z datą!!!')
 
-    przepustki_suma = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('pracownik__nr_pracownika').annotate(licz=Count('czas'))
-    ilosc_przepustek = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=1).values('pracownik__nr_pracownika').annotate(licz=Count('czas'))
-    ilosc_odpracowan = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=2).values('pracownik__nr_pracownika').annotate(licz=Count('czas'))
-    ilosc_sluzbowych = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=0).values('pracownik__nr_pracownika').annotate(licz=Count('czas'))
-    czas_przepustki = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=1).values('pracownik__nr_pracownika').annotate(czas_licz=Sum('czas_w_minutach'))
-    czas_odpracowania = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=2).values('pracownik__nr_pracownika').annotate(czas_licz=Sum('czas_w_minutach'))
-    czas_sluzbowych = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=0).values('pracownik__nr_pracownika').annotate(czas_licz=Sum('czas_w_minutach'))
+    przepustki_suma = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(cofnieta=0).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).values('pracownik__nr_pracownika').annotate(licz=Count('czas'))
+    ilosc_przepustek = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(cofnieta=0).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=1).values('pracownik__nr_pracownika').annotate(licz=Count('czas'))
+    ilosc_odpracowan = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(cofnieta=0).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=2).values('pracownik__nr_pracownika').annotate(licz=Count('czas'))
+    ilosc_sluzbowych = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(cofnieta=0).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=0).values('pracownik__nr_pracownika').annotate(licz=Count('czas'))
+    czas_przepustki = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(cofnieta=0).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=1).values('pracownik__nr_pracownika').annotate(czas_licz=Sum('czas_w_minutach'))
+    czas_odpracowania = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(cofnieta=0).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=2).values('pracownik__nr_pracownika').annotate(czas_licz=Sum('czas_w_minutach'))
+    czas_sluzbowych = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(cofnieta=0).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(rodzaj_wpisu__czas__exact=0).values('pracownik__nr_pracownika').annotate(czas_licz=Sum('czas_w_minutach'))
 
     wpisy = Przepustka.objects.filter(pracownik__nr_pracownika__exact=id).filter(data_wyjscia__gte=data_od).filter(data_wyjscia__lte=data_do).filter(cofnieta=False).order_by('-id')
 
